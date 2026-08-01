@@ -1,0 +1,11 @@
+{
+  // Sitio estático servido por Cloudflare Workers (static assets).
+  // No hay código de servidor: Workers sirve directamente ./public
+  "name": "incontextenglish",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

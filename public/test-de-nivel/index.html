@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title data-en="Free English level test | In Context English">Test de nivel de inglés gratis | In Context English</title>
+<meta name="description" content="Test de nivel de inglés gratis: 20 preguntas en contexto, 10 minutos. Obtenés tu nivel según el Marco Común Europeo (A1 a C1) y una recomendación de curso.">
+<link rel="canonical" href="https://incontextenglish.com.ar/test-de-nivel/">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://incontextenglish.com.ar/test-de-nivel/">
+<meta property="og:site_name" content="In Context English">
+<meta property="og:locale" content="es_AR">
+<meta property="og:title" content="Test de nivel de inglés gratis">
+<meta property="og:description" content="20 preguntas en contexto, unos 10 minutos. Descubrí tu nivel y qué curso te corresponde.">
+<meta property="og:image" content="https://incontextenglish.com.ar/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#6e1112">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="pagina-test">
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="logo" href="/" aria-label="In Context English — inicio">
+      <img src="/assets/logo.png" alt="In Context English" width="414" height="200">
+    </a>
+    <div class="header-acciones">
+      <button class="lang-btn" type="button" data-lang-btn aria-label="Cambiar idioma / Switch language">ES / <span style="opacity:.45">EN</span></button>
+      <a class="volver" href="/" data-en="← Back to home">← Volver al inicio</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ---------- Pantalla 1: presentación ---------- -->
+  <section class="test-wrap" id="pantalla-intro">
+    <p class="pill-etiqueta" data-en="FREE LEVEL TEST · 20 QUESTIONS">TEST DE NIVEL GRATIS · 20 PREGUNTAS</p>
+
+    <h1 class="display" data-en="Find out your level and which course suits you.">Descubrí tu nivel y qué curso te corresponde.</h1>
+
+    <p class="test-bajada" data-en="Twenty questions in context — real sentences, not isolated grammar. It takes about 10 minutes and at the end you get your CEFR level (A1 to C1) with a recommendation.">Veinte preguntas en contexto: frases reales, no gramática suelta. Te toma unos 10 minutos y al final obtenés tu nivel según el Marco Común Europeo (A1 a C1) con una recomendación.</p>
+
+    <ul class="instrucciones">
+      <li>
+        <b>01</b>
+        <span data-en="Choose the option that sounds natural to you.">Elegí la opción que te suene natural.</span>
+      </li>
+      <li>
+        <b>02</b>
+        <span data-en="No dictionary, no translator — the point is what you already know.">Sin diccionario ni traductor: importa lo que ya sabés.</span>
+      </li>
+      <li>
+        <b>03</b>
+        <span data-en="If you don't know, skip it. Guessing distorts the result.">Si no sabés, saltala. Adivinar distorsiona el resultado.</span>
+      </li>
+    </ul>
+
+    <button class="btn btn--wa" type="button" id="btn-empezar" style="margin-top:40px" data-en="Start the test">Empezar el test</button>
+  </section>
+
+  <!-- ---------- Pantalla 2: preguntas ---------- -->
+  <section class="test-wrap" id="pantalla-quiz" hidden>
+    <div class="quiz-meta">
+      <span id="quiz-progreso"></span>
+      <span id="quiz-banda"></span>
+    </div>
+    <div class="quiz-barra"><div id="quiz-barra-relleno"></div></div>
+
+    <h2 class="quiz-pregunta" id="quiz-pregunta"></h2>
+    <div class="opciones" id="quiz-opciones"></div>
+
+    <div class="quiz-acciones">
+      <button class="btn-texto" type="button" id="btn-saltar" data-en="I don't know — skip">No sé, saltar</button>
+      <button class="btn-texto btn-texto--pelado" type="button" id="btn-anterior" data-en="← Previous">← Anterior</button>
+    </div>
+  </section>
+
+  <!-- ---------- Pantalla 3: resultado ---------- -->
+  <section class="test-wrap test-wrap--ancho" id="pantalla-resultado" hidden>
+    <p class="etiqueta-mono" style="color:var(--amarillo)" data-en="YOUR RESULT">TU RESULTADO</p>
+
+    <div class="resultado-cabecera">
+      <div class="resultado-nivel" id="res-nivel"></div>
+      <div style="padding-bottom:12px">
+        <div class="resultado-nombre" id="res-nombre"></div>
+        <div class="resultado-puntaje" id="res-puntaje"></div>
+      </div>
+    </div>
+
+    <p class="resultado-blurb" id="res-blurb"></p>
+
+    <div class="resultado-tarjetas">
+      <div class="tarjeta-curso">
+        <p class="etiqueta-mono" data-en="RECOMMENDED COURSE">CURSO RECOMENDADO</p>
+        <h3 id="res-curso"></h3>
+        <p id="res-porque"></p>
+      </div>
+      <div class="tarjeta-foco">
+        <p class="etiqueta-mono" data-en="WHAT WE'D WORK ON">EN QUÉ TRABAJARÍAMOS</p>
+        <ul id="res-foco"></ul>
+      </div>
+    </div>
+
+    <div class="resultado-ctas">
+      <a class="btn btn--wa" id="res-wa" href="#" target="_blank" rel="noopener">
+        <span class="punto" aria-hidden="true"></span>
+        <span data-en="Send me my result on WhatsApp">Mandarme el resultado por WhatsApp</span>
+      </a>
+      <button class="btn btn--fantasma-claro" type="button" id="btn-reiniciar" data-en="Take it again">Volver a hacerlo</button>
+    </div>
+
+    <div class="repaso">
+      <p class="etiqueta-mono" style="color:rgba(251,201,62,.8)" data-en="ANSWER REVIEW">REPASO DE RESPUESTAS</p>
+      <ol id="res-repaso"></ol>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;width:100%">
+    <span>© 2026 In Context English · Victoria Rossa</span>
+    <a href="https://www.instagram.com/incontextenglish.com.ar" target="_blank" rel="noopener">Instagram ↗</a>
+  </div>
+</footer>
+
+<script src="/app.js" defer></script>
+<script src="/quiz.js" defer></script>
+</body>
+</html>
