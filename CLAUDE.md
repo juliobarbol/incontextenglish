@@ -187,12 +187,27 @@ Está el conector **Cloudflare Developer Platform** (MCP). El Worker se llama
 `cronometro`: mirá su `modified_on` con `workers_list` antes y después del push.
 Si no cambió, el deploy no corrió o falló.
 
-**Workers Builds publica cualquier rama, no sólo la principal.** Comprobado el
-2/8/2026: un push a una rama de trabajo salió a producción con el sitio en vivo,
-sin merge de por medio. **Está decidido dejarlo así** (2/8/2026) — no lo plantees
-como problema ni lo cambies sin pedido explícito.
+### Qué rama publica, y por qué
 
-La consecuencia práctica es que **en `public/` no hay borrador**: cualquier push
+**Ojo: hoy cualquier rama publica, no sólo `main`.** Comprobado el 2/8/2026: un
+push a una rama de trabajo salió a producción, sin merge de por medio.
+
+La causa no es la rama. En Workers Builds hay dos comandos: el de despliegue,
+que corre para la rama de producción, y el **comando de versión**, que corre para
+las demás. El de versión viene por defecto en `npx wrangler versions upload`, que
+sube la versión **sin ponerla en vivo** y devuelve una URL de vista previa. Acá
+está puesto en `npx wrangler deploy`, que publica. De ahí que toda rama salga a
+producción.
+
+Se cambia en Compute (Workers) → `cronometro` → Configuración → Configuración de
+compilación → «Comando de versión». **Antes de dar por sentado en qué modo está,
+miralo ahí**, porque de eso depende si un push a una rama de trabajo sale en vivo:
+
+- si dice `npx wrangler deploy` → **cualquier push publica**;
+- si dice `npx wrangler versions upload` → sólo publica `main`, y las ramas de
+  trabajo suben una versión con URL de vista previa que hay que promover a mano.
+
+Mientras esté en el primer modo, **en `public/` no hay borrador**: cualquier push
 es el sitio en vivo. Por eso `npm run verificar` va antes del commit, no después,
 y no se pushea nada a medio hacer.
 
