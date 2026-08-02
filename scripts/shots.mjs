@@ -267,6 +267,41 @@ for (const vp of ANCHOS) {
   await ctx.close();
 }
 
+/* La regla de nivel, contra patrones de respuestas armados a mano. Es lo único
+   del test que no se ve mirando la pantalla: un cambio acá sale mal en silencio,
+   mandando gente al curso equivocado. Cada caso es «aciertos por banda». */
+{
+  const { ctx, page } = await nuevaPagina(ANCHOS[0], "regla de nivel");
+  await page.goto(`${base}/test-de-nivel/`, { waitUntil: "networkidle" });
+
+  const casos = [
+    { por: [4, 4, 4, 4, 4], nivel: "C1", nota: "todo bien" },
+    { por: [3, 3, 3, 3, 3], nivel: "C1", nota: "3 de 4 en todas" },
+    { por: [4, 4, 0, 0, 0], nivel: "A2", nota: "se frena en A2" },
+    { por: [4, 2, 4, 4, 4], nivel: "C1", nota: "18/20 con un tropiezo en A2" },
+    { por: [2, 4, 4, 4, 4], nivel: "C1", nota: "18/20 con un tropiezo en A1" },
+    { por: [4, 4, 4, 4, 2], nivel: "B2", nota: "no domina C1" },
+    { por: [0, 0, 0, 0, 4], nivel: "A1", nota: "sólo las difíciles: no se sostiene" },
+    { por: [0, 0, 0, 0, 0], nivel: "A1", nota: "ninguna" },
+  ];
+
+  for (const caso of casos) {
+    const dio = await page.evaluate((porBanda) => {
+      const restantes = { A1: porBanda[0], A2: porBanda[1], B1: porBanda[2], B2: porBanda[3], C1: porBanda[4] };
+      // Acierta las primeras N de cada banda y falla el resto a propósito.
+      const respuestas = PREGUNTAS.map((q) => (restantes[q.banda]-- > 0 ? q.a : (q.a + 1) % q.opts.length));
+      return calcular(respuestas).nivel;
+    }, caso.por);
+
+    if (dio !== caso.nivel) {
+      problemas.push(`regla de nivel: [${caso.por}] (${caso.nota}) tendría que dar ${caso.nivel} y dio ${dio}`);
+    }
+  }
+
+  console.log(`  · la regla de nivel pasa los ${casos.length} casos`);
+  await ctx.close();
+}
+
 /* El progreso a medio camino: son 20 preguntas y casi siempre en el teléfono */
 {
   const { ctx, page } = await nuevaPagina(ANCHOS[1], "test a medias");

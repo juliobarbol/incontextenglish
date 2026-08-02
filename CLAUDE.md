@@ -75,10 +75,29 @@ En las páginas los dos scripts van con `defer`, `app.js` primero. Ese orden imp
 `quiz.js` tiene un solo objeto `estado` (`pantalla`, `i`, `respuestas`) y las tres
 secciones conviven en el HTML alternando `hidden`.
 
-La regla de nivel es acumulativa y **no** es un porcentaje: recorre
-`["A1","A2","B1","B2","C1"]` en orden y sube mientras la banda tenga 3 o más
-aciertos de sus 4 preguntas; corta en la primera que falla. Viene del prototipo
-original — está portada tal cual y no hay que "mejorarla" sin pedido explícito.
+La regla de nivel **no** es un porcentaje del total. El nivel es la banda más
+alta que cumple las dos cosas a la vez:
+
+1. **domina esa banda**: al menos 3 aciertos de sus 4 preguntas, y
+2. **sostiene el acumulado**: desde A1 hasta esa banda inclusive, al menos el
+   75% de aciertos.
+
+La segunda condición es la que impide que un golpe de suerte en las difíciles
+levante el nivel; la primera, que un buen acumulado lo levante sin dominar la
+banda. Se recorren las cinco bandas y gana la más alta que califica: **no se
+corta en la primera que falla**.
+
+Esa era la regla del prototipo (subir mientras la banda tuviera 3 de 4, cortando
+en la primera que fallara) y **daba resultados falsos**: fallar dos preguntas de
+A2 por distracción tapaba todo lo demás, así que se podía terminar con 18 de 20
+correctas y la pantalla diciendo «A1 · Principiante». Cambiada el 2/8/2026 a
+pedido explícito del dueño. Los umbrales van como proporción (`UMBRAL = 0.75`) y
+no como «3», para que sigan valiendo si alguna banda deja de tener cuatro
+preguntas.
+
+**La regla no se ve mirando la pantalla: un cambio acá sale mal en silencio y
+manda gente al curso equivocado.** Por eso `npm run shots` la corre contra ocho
+patrones de respuestas armados a mano. Si la tocás, ampliá esos casos.
 
 ### 4. Hay exactamente un endpoint, y es opcional
 

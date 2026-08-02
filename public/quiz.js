@@ -98,7 +98,11 @@ const enIngles = () => document.documentElement.lang === "en";
 /* `registrar()` vive en app.js, que carga antes que este script en todas las
    páginas. Acá sólo se usa para los dos eventos del test. */
 
-/* ---------- Cálculo del nivel (misma lógica que el prototipo) ------------ */
+/* ---------- Cálculo del nivel -------------------------------------------- */
+
+/* Tres de cada cuatro. Va como proporción y no como «3», para que siga
+   valiendo si alguna banda deja de tener exactamente cuatro preguntas. */
+const UMBRAL = 0.75;
 
 function calcular(respuestas = estado.respuestas) {
   const porBanda = {};
@@ -109,10 +113,18 @@ function calcular(respuestas = estado.respuestas) {
     if (respuestas[i] === q.a) porBanda[q.banda].ok++;
   });
 
+  /* El nivel es la banda más alta que cumple las dos condiciones. No se corta
+     en la primera que falla: se recorren todas y gana la más alta que califica.
+     Ver el porqué en CLAUDE.md — la regla anterior daba «A1» con 18/20. */
   let nivel = "A1";
+  let ok = 0;
+  let total = 0;
   for (const b of ORDEN) {
-    if (porBanda[b].ok >= 3) nivel = b;
-    else break;
+    ok += porBanda[b].ok;
+    total += porBanda[b].total;
+    const dominaLaBanda = porBanda[b].ok >= porBanda[b].total * UMBRAL;
+    const sostieneElAcumulado = ok >= total * UMBRAL;
+    if (dominaLaBanda && sostieneElAcumulado) nivel = b;
   }
 
   const puntaje = PREGUNTAS.reduce((n, q, i) => n + (respuestas[i] === q.a ? 1 : 0), 0);
