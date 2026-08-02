@@ -174,6 +174,13 @@ sitio en vivo. Por eso `npm run verificar` va antes del commit, no después, y n
 se pushea nada a medio hacer. Si algo tiene que quedar sin publicar, no lo
 pushees: dejalo en local hasta que esté.
 
+**Terminar un cambio incluye pushearlo.** Pedido explícito del dueño (2/8/2026):
+no dejes trabajo terminado sólo commiteado en local esperando confirmación —
+como el deploy es automático, un cambio sin push es un cambio que no existe.
+El orden es siempre el mismo: `npm run verificar` → commit → `git push -u origin
+<rama>`. Lo único que no se pushea es lo que está a medio hacer o lo que el dueño
+pidió dejar sin publicar.
+
 Ese conector **no trae** el estado ni los logs de Workers Builds, ni analítica, ni
 purga de caché, ni DNS: para saber *por qué* falló un build hay que ir al panel de
 Cloudflare. Sí permite leer el código y los assets que están efectivamente en
