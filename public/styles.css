@@ -387,9 +387,26 @@ h2.display { font-size: clamp(30px, 4.6vw, 44px); line-height: 1.12; }
   from { transform: translateX(0); }
   to { transform: translateX(-100%); }
 }
+/* Sin animación (o con "reducir movimiento" activado en el teléfono) la
+   marquesina quedaba recortada a los costados: se muestran las frases
+   completas en varias líneas en vez de una tira que hay que arrastrar. */
 @media (prefers-reduced-motion: reduce) {
-  .marquee__track { animation: none; }
-  .marquee { overflow-x: auto; }
+  .marquee {
+    display: block;
+    overflow: visible;
+    padding-inline: 20px;
+  }
+  .marquee__track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 20px;
+    padding-right: 0;
+    white-space: normal;
+    text-align: center;
+  }
+  .marquee__track .sep { display: none; }
+  .marquee__track + .marquee__track { display: none; }
 }
 
 /* ---------- Secciones ---------- */
