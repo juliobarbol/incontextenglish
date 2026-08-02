@@ -192,10 +192,16 @@ Si no cambió, el deploy no corrió o falló.
 sin merge de por medio. **Está decidido dejarlo así** (2/8/2026) — no lo plantees
 como problema ni lo cambies sin pedido explícito.
 
-La consecuencia práctica es que **acá no hay borrador**: cualquier push es el
-sitio en vivo. Por eso `npm run verificar` va antes del commit, no después, y no
-se pushea nada a medio hacer. Si algo tiene que quedar sin publicar, no lo
-pushees: dejalo en local hasta que esté.
+La consecuencia práctica es que **en `public/` no hay borrador**: cualquier push
+es el sitio en vivo. Por eso `npm run verificar` va antes del commit, no después,
+y no se pushea nada a medio hacer.
+
+Lo que todavía no puede publicarse **no se deja sin pushear: se guarda fuera de
+`public/`**, en `contenido/` (ver `contenido/README.md`). Workers sirve
+únicamente `public/` —`assets.directory` en `wrangler.jsonc`—, así que un push
+que sólo toca `contenido/` corre el deploy y deja el sitio byte por byte igual.
+Dejarlo sin pushear es peor que pushearlo: el trabajo queda sólo en la máquina
+donde se hizo, y en una sesión remota eso se pierde con el contenedor.
 
 **Terminar un cambio incluye pushearlo.** Pedido explícito del dueño (2/8/2026):
 no dejes trabajo terminado sólo commiteado en local esperando confirmación —
