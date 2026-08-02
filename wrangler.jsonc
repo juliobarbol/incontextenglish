@@ -2,7 +2,11 @@
   // Sitio estático servido por Cloudflare Workers (static assets).
   // El único código de servidor es src/index.js, y `run_worker_first` lo limita
   // a /api/*: el resto de las rutas las sirve Workers directo desde ./public
-  "name": "incontextenglish",
+  // El Worker desplegado se llama "cronometro", por el repo viejo del que salió
+  // este. Workers Builds despliega ahí igual (ignora este campo), pero si el
+  // nombre no coincide, un `npm run deploy` desde una máquina crea un Worker
+  // nuevo llamado como diga acá, sin los custom domains. Dejarlo en cronometro.
+  "name": "cronometro",
   "compatibility_date": "2026-08-01",
   "main": "./src/index.js",
   "assets": {

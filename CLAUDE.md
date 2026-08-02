@@ -106,9 +106,12 @@ Para consultar los datos no hace falta panel: el conector de Cloudflare permite
   la única excepción, y no recibe datos de contacto. Si alguna vez hace falta
   recibir por correo, es sumar Formspree o una Worker Function, no "arreglar" el
   formulario.
-- **El Worker se llama `cronometro`**, por el nombre viejo del repo. Los Workers no
-  se renombran: habría que crear uno nuevo y mover los dos custom domains, con
-  caída del sitio a cambio de una URL `.workers.dev` que nadie ve. **Dejarlo así.**
+- **El Worker se llama `cronometro`**, por el nombre viejo del repo del que salió
+  éste. Los Workers no se renombran: habría que crear uno nuevo y mover los dos
+  custom domains, con caída del sitio a cambio de una URL `.workers.dev` que nadie
+  ve. **Dejarlo así**, y que `name` en `wrangler.jsonc` diga `cronometro`: Workers
+  Builds ignora ese campo y despliega igual, pero un `npm run deploy` desde una
+  máquina sí lo usa, y con otro nombre crearía un Worker paralelo sin dominios.
 - **Las fotos son selfies** y ya están recortadas y convertidas. Los PNG originales
   no están versionados; vinieron del export de Claude Design.
 
