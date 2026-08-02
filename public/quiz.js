@@ -4,6 +4,9 @@
    Las preguntas, el puntaje y los textos por nivel son los del diseño original.
    ========================================================================== */
 
+/* Estas 20 son fijas: todos reciben las mismas y en el mismo orden. Hay un
+   banco de 50 esperando revisión en contenido/preguntas-propuestas.json, para
+   sortear 4 por banda y que el test no se pueda memorizar. */
 const PREGUNTAS = [
   { banda: "A1", q: "— Hi! ___ your name?", opts: ["What's", "How's", "Which is", "Who's"], a: 0 },
   { banda: "A1", q: "She ___ from Argentina, but she lives in Spain.", opts: ["are", "is", "be", "am"], a: 1 },
