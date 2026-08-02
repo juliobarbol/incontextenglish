@@ -154,11 +154,15 @@ Está el conector **Cloudflare Developer Platform** (MCP). El Worker se llama
 `cronometro`: mirá su `modified_on` con `workers_list` antes y después del push.
 Si no cambió, el deploy no corrió o falló.
 
-**Ojo con esto: Workers Builds publica cualquier rama, no sólo la principal.**
-Comprobado el 2/8/2026 — un push a una rama de trabajo salió a producción con el
-sitio en vivo, sin merge de por medio. Mientras siga así, **trabajar en una rama
-no protege nada**: lo que pushees se publica. Si eso no es lo que se quiere, hay
-que limitarlo en Cloudflare → Worker `cronometro` → Settings → Builds.
+**Workers Builds publica cualquier rama, no sólo la principal.** Comprobado el
+2/8/2026: un push a una rama de trabajo salió a producción con el sitio en vivo,
+sin merge de por medio. **Está decidido dejarlo así** (2/8/2026) — no lo plantees
+como problema ni lo cambies sin pedido explícito.
+
+La consecuencia práctica es que **acá no hay borrador**: cualquier push es el
+sitio en vivo. Por eso `npm run verificar` va antes del commit, no después, y no
+se pushea nada a medio hacer. Si algo tiene que quedar sin publicar, no lo
+pushees: dejalo en local hasta que esté.
 
 Ese conector **no trae** el estado ni los logs de Workers Builds, ni analítica, ni
 purga de caché, ni DNS: para saber *por qué* falló un build hay que ir al panel de
