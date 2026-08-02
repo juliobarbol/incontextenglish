@@ -152,8 +152,13 @@ No se deduce del código, y el procedimiento completo está en el README:
 
 Está el conector **Cloudflare Developer Platform** (MCP). El Worker se llama
 `cronometro`: mirá su `modified_on` con `workers_list` antes y después del push.
-Si no cambió, el deploy no corrió — casi siempre porque pusheaste a una rama que
-no es la de producción de Workers Builds.
+Si no cambió, el deploy no corrió o falló.
+
+**Ojo con esto: Workers Builds publica cualquier rama, no sólo la principal.**
+Comprobado el 2/8/2026 — un push a una rama de trabajo salió a producción con el
+sitio en vivo, sin merge de por medio. Mientras siga así, **trabajar en una rama
+no protege nada**: lo que pushees se publica. Si eso no es lo que se quiere, hay
+que limitarlo en Cloudflare → Worker `cronometro` → Settings → Builds.
 
 Ese conector **no trae** el estado ni los logs de Workers Builds, ni analítica, ni
 purga de caché, ni DNS: para saber *por qué* falló un build hay que ir al panel de
