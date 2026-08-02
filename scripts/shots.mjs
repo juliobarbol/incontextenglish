@@ -91,10 +91,29 @@ async function reglasDeCabeceras() {
   return reglas;
 }
 
+/* Eventos que el sitio manda a /api/evento durante la corrida. En producción
+   los recibe el Worker (src/index.js); acá los juntamos para comprobar que el
+   registro anónimo del test se dispara de verdad. */
+const eventosRecibidos = [];
+
 async function levantarServidor() {
   const reglas = await reglasDeCabeceras();
   const server = createServer(async (req, res) => {
     let ruta = decodeURIComponent(req.url.split("?")[0]);
+
+    if (ruta === "/api/evento") {
+      const trozos = [];
+      for await (const t of req) trozos.push(t);
+      try {
+        eventosRecibidos.push(JSON.parse(Buffer.concat(trozos).toString()));
+      } catch {
+        eventosRecibidos.push({ evento: "(cuerpo ilegible)" });
+      }
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+
     if (ruta.endsWith("/")) ruta += "index.html";
     let archivo = join(PUBLIC, ruta);
     if (!existsSync(archivo)) {
@@ -151,6 +170,9 @@ async function nuevaPagina(viewport, donde) {
   page.on("requestfailed", (r) => {
     const url = r.url();
     const fallo = r.failure()?.errorText ?? "falló";
+    // Los envíos a /api/* van con keepalive: Chromium los da por abortados
+    // aunque el cuerpo llegue. Que llegan se comprueba con eventosRecibidos.
+    if (url.startsWith(base + "/api/")) return;
     if (url.startsWith(base)) problemas.push(`${donde}: no carga ${url.replace(base, "")} — ${fallo}`);
     else console.log(`  · recurso externo no disponible (normal sin red): ${new URL(url).host}`);
   });
@@ -213,6 +235,20 @@ for (const vp of ANCHOS) {
     console.log("  · el resultado del test se traduce al cambiar de idioma");
   }
   await capturar(page, "test-resultado-en");
+
+  /* El registro anónimo: un "inicio" al empezar y un "resultado" al terminar */
+  await page.waitForTimeout(300);
+  const inicio = eventosRecibidos.find((e) => e.evento === "inicio");
+  const resultado = eventosRecibidos.find((e) => e.evento === "resultado");
+  if (!inicio) problemas.push("no llegó el evento «inicio» a /api/evento");
+  if (!resultado) {
+    problemas.push("no llegó el evento «resultado» a /api/evento");
+  } else if (resultado.nivel !== nivel || typeof resultado.puntaje !== "number") {
+    problemas.push(`el evento «resultado» llegó mal: ${JSON.stringify(resultado)}`);
+  } else {
+    console.log(`  · se registraron los eventos del test (resultado: ${resultado.nivel}, ${resultado.puntaje}/20)`);
+  }
+
   await ctx.close();
 }
 

@@ -1,11 +1,24 @@
 {
   // Sitio estático servido por Cloudflare Workers (static assets).
-  // No hay código de servidor: Workers sirve directamente ./public
+  // El único código de servidor es src/index.js, y `run_worker_first` lo limita
+  // a /api/*: el resto de las rutas las sirve Workers directo desde ./public
   "name": "incontextenglish",
   "compatibility_date": "2026-08-01",
+  "main": "./src/index.js",
   "assets": {
     "directory": "./public",
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "incontextenglish",
+      "database_id": "1707273f-9964-491f-957e-933c5d8d1400"
+    }
+  ],
+  "observability": {
+    "enabled": true
   }
 }

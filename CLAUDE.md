@@ -80,11 +80,32 @@ La regla de nivel es acumulativa y **no** es un porcentaje: recorre
 aciertos de sus 4 preguntas; corta en la primera que falla. Viene del prototipo
 original — está portada tal cual y no hay que "mejorarla" sin pedido explícito.
 
+### 4. Hay exactamente un endpoint, y es opcional
+
+`src/index.js` es todo el código de servidor. `run_worker_first: ["/api/*"]` en
+`wrangler.jsonc` lo limita a esa ruta: cualquier otra la sirve Workers directo
+desde `public/`, sin pasar por el script. El sitio sigue siendo estático.
+
+Recibe `POST /api/evento` y anota en D1 (binding `DB`, tabla `eventos_test`,
+esquema en `schema.sql`) cuánta gente empieza el test y cuánta lo termina, con qué
+nivel. **No guarda nada personal**: ni mail, ni nombre, ni IP, ni las respuestas.
+Sólo nivel, puntaje, idioma y país.
+
+Del lado del cliente es `registrar()` en `quiz.js`, y es deliberadamente
+descartable: va con `keepalive`, ignora la respuesta y se traga cualquier error.
+**Si el registro falla, el test tiene que seguir funcionando igual.** No lo
+conviertas en `await` ni le pongas manejo de errores visible.
+
+Para consultar los datos no hace falta panel: el conector de Cloudflare permite
+`d1_database_query` sobre la base `incontextenglish`.
+
 ## Decisiones deliberadas — no son bugs
 
 - **El formulario no manda mails.** Arma el texto y abre `wa.me` con el mensaje
-  escrito. El sitio no tiene backend a propósito. Si alguna vez hace falta recibir
-  por correo, es sumar Formspree o una Worker Function, no "arreglar" el formulario.
+  escrito. El sitio no tiene backend a propósito — el endpoint de `/api/evento` es
+  la única excepción, y no recibe datos de contacto. Si alguna vez hace falta
+  recibir por correo, es sumar Formspree o una Worker Function, no "arreglar" el
+  formulario.
 - **El Worker se llama `cronometro`**, por el nombre viejo del repo. Los Workers no
   se renombran: habría que crear uno nuevo y mover los dos custom domains, con
   caída del sitio a cambio de una URL `.workers.dev` que nadie ve. **Dejarlo así.**

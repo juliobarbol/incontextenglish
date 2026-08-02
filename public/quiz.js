@@ -88,6 +88,23 @@ const estado = { pantalla: "intro", i: 0, respuestas: [] };
 const $ = (id) => document.getElementById(id);
 const enIngles = () => document.documentElement.lang === "en";
 
+/* ---------- Registro anónimo (para saber si el test sirve) --------------- */
+
+/* Manda el evento a /api/evento y se olvida. No guarda nada personal y nunca
+   puede molestar a quien está haciendo el test: si falla, falla en silencio. */
+function registrar(evento, datos = {}) {
+  try {
+    fetch("/api/evento", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ evento, idioma: enIngles() ? "en" : "es", ...datos }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    /* navegador viejo o sin fetch: seguimos igual */
+  }
+}
+
 /* ---------- Cálculo del nivel (misma lógica que el prototipo) ------------ */
 
 function calcular() {
@@ -218,6 +235,12 @@ function responder(idx) {
   if (siguiente >= PREGUNTAS.length) {
     mostrarPantalla("resultado");
     pintarResultado();
+    const { nivel, puntaje } = calcular();
+    registrar("resultado", {
+      nivel,
+      puntaje,
+      contestadas: estado.respuestas.filter((r) => r !== -1 && r !== undefined).length,
+    });
   } else {
     pintarPregunta();
   }
@@ -232,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     estado.respuestas = [];
     mostrarPantalla("quiz");
     pintarPregunta();
+    registrar("inicio");
   });
 
   $("btn-saltar").addEventListener("click", () => responder(-1));

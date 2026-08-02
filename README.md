@@ -130,6 +130,25 @@ Además, `.claude/settings.json` deja corriendo el validador después de cada
 edición en `public/`, así un `data-en` olvidado o un enlace roto se detectan en el
 momento y no cuando alguien abre la página.
 
+## Qué se mide del test de nivel
+
+Antes no quedaba rastro de nadie: si la persona terminaba el test y no apretaba
+enviar en WhatsApp, no había forma de saber que había existido. Ahora el sitio
+anota, de forma anónima, cuántas personas **empiezan** el test y cuántas lo
+**terminan**, con qué nivel, en qué idioma y desde qué país.
+
+**No se guarda nada personal**: ni mail, ni nombre, ni IP, ni las respuestas.
+
+Vive en `src/index.js` (un endpoint, `POST /api/evento`) y en una base D1 llamada
+`incontextenglish`, con el esquema en `schema.sql`. El registro es descartable a
+propósito: si falla, la persona ve su resultado igual y no se entera de nada.
+
+Para desarrollo local hay que crear la tabla una vez:
+
+```bash
+npx wrangler d1 execute incontextenglish --local --file=schema.sql
+```
+
 ## Cabeceras y seguridad
 
 `public/_headers` define caché y seguridad. Incluye una **Content-Security-Policy**
