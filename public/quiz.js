@@ -83,7 +83,14 @@ const NIVELES = {
 const ORDEN = ["A1", "A2", "B1", "B2", "C1"];
 const WA_TEST = "5493515645110";
 
-const estado = { pantalla: "intro", i: 0, respuestas: [] };
+/* El test son 20 preguntas y unos 10 minutos, casi siempre en el teléfono: si
+   entra una llamada a mitad de camino, sin esto se pierde todo. El progreso
+   queda en el navegador de quien lo hace y el resultado se refleja en el hash,
+   así se puede recargar o pasarle el link a alguien. */
+const CLAVE_TEST = "ice-test";
+const VENCE_MS = 7 * 24 * 60 * 60 * 1000;
+
+const estado = { pantalla: "intro", i: 0, respuestas: [], resultado: null };
 
 const $ = (id) => document.getElementById(id);
 const enIngles = () => document.documentElement.lang === "en";
@@ -93,13 +100,13 @@ const enIngles = () => document.documentElement.lang === "en";
 
 /* ---------- Cálculo del nivel (misma lógica que el prototipo) ------------ */
 
-function calcular() {
+function calcular(respuestas = estado.respuestas) {
   const porBanda = {};
   ORDEN.forEach((b) => (porBanda[b] = { ok: 0, total: 0 }));
 
   PREGUNTAS.forEach((q, i) => {
     porBanda[q.banda].total++;
-    if (estado.respuestas[i] === q.a) porBanda[q.banda].ok++;
+    if (respuestas[i] === q.a) porBanda[q.banda].ok++;
   });
 
   let nivel = "A1";
@@ -108,7 +115,78 @@ function calcular() {
     else break;
   }
 
-  const puntaje = PREGUNTAS.reduce((n, q, i) => n + (estado.respuestas[i] === q.a ? 1 : 0), 0);
+  const puntaje = PREGUNTAS.reduce((n, q, i) => n + (respuestas[i] === q.a ? 1 : 0), 0);
+  return { nivel, puntaje };
+}
+
+/* ---------- Progreso guardado y resultado en el hash --------------------- */
+
+/* Las respuestas no salen del navegador: el registro anónimo sigue mandando
+   sólo nivel y puntaje, como antes. */
+
+function guardar(terminado = false) {
+  try {
+    localStorage.setItem(
+      CLAVE_TEST,
+      JSON.stringify({ i: estado.i, respuestas: estado.respuestas, terminado, ts: Date.now() })
+    );
+  } catch {
+    /* modo privado o sin espacio: el test funciona igual, sólo no se guarda */
+  }
+}
+
+function olvidar() {
+  try {
+    localStorage.removeItem(CLAVE_TEST);
+  } catch {
+    /* idem */
+  }
+}
+
+/* Lo que sale de localStorage lo pudo editar cualquiera, y `respuestas` indexa
+   las opciones de cada pregunta: se revisa entero antes de usarlo. */
+function leerGuardado() {
+  let d;
+  try {
+    d = JSON.parse(localStorage.getItem(CLAVE_TEST));
+  } catch {
+    return null;
+  }
+  if (!d || !Array.isArray(d.respuestas) || !Number.isInteger(d.i)) return null;
+  if (!Number.isFinite(d.ts) || Date.now() - d.ts > VENCE_MS) return null;
+  if (d.i < 0 || d.i > PREGUNTAS.length) return null;
+
+  const respuestas = PREGUNTAS.map((q, i) => {
+    const r = d.respuestas[i];
+    return Number.isInteger(r) && r >= -1 && r < q.opts.length ? r : undefined;
+  });
+  return { i: d.i, respuestas, terminado: d.terminado === true };
+}
+
+/* replaceState y no location.hash: así no salta el scroll ni se suma una
+   entrada al historial por cada test terminado. */
+function escribirHash(nivel, puntaje) {
+  try {
+    history.replaceState(null, "", `#resultado=${nivel.toLowerCase()}-${puntaje}`);
+  } catch {
+    /* sin history: el test anda igual, sólo no queda el link */
+  }
+}
+
+function limpiarHash() {
+  try {
+    history.replaceState(null, "", location.pathname);
+  } catch {
+    /* idem */
+  }
+}
+
+function leerHash() {
+  const m = /^#resultado=([a-z]\d)-(\d{1,2})$/i.exec(location.hash);
+  if (!m) return null;
+  const nivel = m[1].toUpperCase();
+  const puntaje = Number(m[2]);
+  if (!ORDEN.includes(nivel) || puntaje > PREGUNTAS.length) return null;
   return { nivel, puntaje };
 }
 
@@ -153,8 +231,12 @@ function pintarPregunta() {
 
 function pintarResultado() {
   const en = enIngles();
-  const { nivel, puntaje } = calcular();
+  const { nivel, puntaje } = estado.resultado ?? calcular();
   const L = NIVELES[nivel];
+
+  /* Si el resultado llegó por un link compartido no tenemos las respuestas:
+     se muestra el nivel, pero no el repaso, que sin ellas no existe. */
+  const conRespuestas = estado.respuestas.some((r) => r !== undefined);
 
   $("res-nivel").textContent = nivel;
   $("res-nombre").textContent = en ? L.nombreEn : L.nombre;
@@ -172,13 +254,21 @@ function pintarResultado() {
     foco.append(li);
   });
 
-  const texto = en
-    ? `Hi Vicky! I did the level test on the site: ${nivel} (${puntaje}/${PREGUNTAS.length}). I'd like to know more about classes.`
-    : `¡Hola Vicky! Hice el test de nivel en la web: ${nivel} (${puntaje}/${PREGUNTAS.length}). Me gustaría saber más sobre las clases.`;
+  const marcador = `${nivel} (${puntaje}/${PREGUNTAS.length})`;
+  const texto = conRespuestas
+    ? en
+      ? `Hi Vicky! I did the level test on the site: ${marcador}. I'd like to know more about classes.`
+      : `¡Hola Vicky! Hice el test de nivel en la web: ${marcador}. Me gustaría saber más sobre las clases.`
+    : en
+      ? `Hi Vicky! I'm looking at a level test result: ${marcador}. I'd like to know more about classes.`
+      : `¡Hola Vicky! Estoy viendo un resultado del test de nivel: ${marcador}. Me gustaría saber más sobre las clases.`;
   $("res-wa").href = `https://wa.me/${WA_TEST}?text=${encodeURIComponent(texto)}`;
 
   const repaso = $("res-repaso");
   repaso.textContent = "";
+  repaso.closest(".repaso").hidden = !conRespuestas;
+  if (!conRespuestas) return;
+
   PREGUNTAS.forEach((q, i) => {
     const dada = estado.respuestas[i];
     const ok = dada === q.a;
@@ -219,26 +309,41 @@ function responder(idx) {
   estado.i = siguiente;
 
   if (siguiente >= PREGUNTAS.length) {
+    const { nivel, puntaje } = calcular();
+    estado.resultado = { nivel, puntaje };
+    guardar(true);
+    escribirHash(nivel, puntaje);
     mostrarPantalla("resultado");
     pintarResultado();
-    const { nivel, puntaje } = calcular();
     registrar("resultado", {
       nivel,
       puntaje,
       contestadas: estado.respuestas.filter((r) => r !== -1 && r !== undefined).length,
     });
   } else {
+    guardar();
     pintarPregunta();
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function desdeCero() {
+  estado.i = 0;
+  estado.respuestas = [];
+  estado.resultado = null;
+  olvidar();
+  limpiarHash();
+  $("btn-continuar").hidden = true;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   if (!$("pantalla-intro")) return;
 
+  const guardado = leerGuardado();
+  const compartido = leerHash();
+
   $("btn-empezar").addEventListener("click", () => {
-    estado.i = 0;
-    estado.respuestas = [];
+    desdeCero();
     mostrarPantalla("quiz");
     pintarPregunta();
     registrar("inicio");
@@ -248,15 +353,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $("btn-anterior").addEventListener("click", () => {
     estado.i = Math.max(0, estado.i - 1);
+    guardar();
     pintarPregunta();
   });
 
   $("btn-reiniciar").addEventListener("click", () => {
-    estado.i = 0;
-    estado.respuestas = [];
+    desdeCero();
     mostrarPantalla("intro");
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+
+  $("btn-compartir").addEventListener("click", async () => {
+    const { nivel, puntaje } = estado.resultado ?? calcular();
+    const url = `${location.origin}${location.pathname}#resultado=${nivel.toLowerCase()}-${puntaje}`;
+    const en = enIngles();
+    const btn = $("btn-compartir");
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: document.title,
+          text: en
+            ? `My English level is ${nivel} (${puntaje}/${PREGUNTAS.length}).`
+            : `Mi nivel de inglés es ${nivel} (${puntaje}/${PREGUNTAS.length}).`,
+          url,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      btn.textContent = en ? "Link copied ✓" : "Link copiado ✓";
+      setTimeout(() => {
+        btn.textContent = enIngles() ? btn.dataset.en : btn.dataset.es;
+      }, 2000);
+    } catch {
+      /* cancelar el diálogo de compartir entra por acá, y no hay nada que hacer */
+    }
+  });
+
+  /* Un resultado en el hash manda sobre todo lo demás: es alguien que recargó
+     su resultado o que abrió el link de otra persona. */
+  if (compartido) {
+    estado.resultado = compartido;
+    // Si el guardado coincide, es quien hizo el test: le mostramos su repaso.
+    if (guardado?.terminado) {
+      const propio = calcular(guardado.respuestas);
+      if (propio.nivel === compartido.nivel && propio.puntaje === compartido.puntaje) {
+        estado.respuestas = guardado.respuestas;
+        estado.i = PREGUNTAS.length;
+      }
+    }
+    mostrarPantalla("resultado");
+    pintarResultado();
+  } else if (guardado && !guardado.terminado && guardado.i > 0 && guardado.i < PREGUNTAS.length) {
+    $("btn-continuar").hidden = false;
+    $("continuar-detalle").textContent = `${guardado.i}/${PREGUNTAS.length}`;
+    $("btn-continuar").addEventListener("click", () => {
+      estado.i = guardado.i;
+      estado.respuestas = guardado.respuestas;
+      mostrarPantalla("quiz");
+      pintarPregunta();
+    });
+  }
 
   // Cuando app.js cambia el idioma, repintamos lo que se genera por JS.
   document.addEventListener("idiomacambiado", render);

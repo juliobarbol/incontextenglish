@@ -653,6 +653,7 @@ h2.display { font-size: clamp(30px, 4.6vw, 44px); line-height: 1.12; }
   padding: clamp(40px, 7vw, 72px) var(--pad-x) clamp(64px, 10vw, 96px);
 }
 .test-wrap--ancho { max-width: 920px; }
+.retomar { margin-top: 28px; gap: 8px; }
 
 .volver {
   font-size: 13.5px;

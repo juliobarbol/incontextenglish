@@ -249,6 +249,44 @@ for (const vp of ANCHOS) {
     console.log(`  · se registraron los eventos del test (resultado: ${resultado.nivel}, ${resultado.puntaje}/20)`);
   }
 
+  /* El resultado queda en el hash: recargar (o abrir el link) tiene que
+     devolver el mismo nivel, no la pantalla de inicio. */
+  const hash = new URL(page.url()).hash;
+  if (!/^#resultado=[a-z]\d-\d+$/.test(hash)) {
+    problemas.push(`el resultado no quedó en la URL para compartir (hash: "${hash}")`);
+  } else {
+    await page.reload({ waitUntil: "networkidle" });
+    const recargado = (await page.textContent("#res-nivel"))?.trim();
+    if (recargado !== nivel) {
+      problemas.push(`al recargar el resultado se perdió: daba ${nivel} y ahora dice "${recargado}"`);
+    } else {
+      console.log(`  · el resultado se recupera al recargar (${hash})`);
+    }
+  }
+
+  await ctx.close();
+}
+
+/* El progreso a medio camino: son 20 preguntas y casi siempre en el teléfono */
+{
+  const { ctx, page } = await nuevaPagina(ANCHOS[1], "test a medias");
+  await page.goto(`${base}/test-de-nivel/`, { waitUntil: "networkidle" });
+  await page.click("#btn-empezar");
+  for (let i = 0; i < 5; i++) await page.click(".opcion >> nth=0");
+
+  await page.reload({ waitUntil: "networkidle" });
+  if (!(await page.isVisible("#btn-continuar"))) {
+    problemas.push("contesté 5 preguntas, recargué y no se puede retomar: se perdió el progreso");
+  } else {
+    await page.click("#btn-continuar");
+    const donde = (await page.textContent("#quiz-progreso"))?.trim();
+    if (!/\b6\s*\/\s*20\b/.test(donde ?? "")) {
+      problemas.push(`al retomar el test no volvió a la pregunta 6 (dice "${donde}")`);
+    } else {
+      console.log("  · el test se retoma donde quedó");
+    }
+  }
+
   await ctx.close();
 }
 

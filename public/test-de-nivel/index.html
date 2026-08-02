@@ -53,6 +53,13 @@
 
     <p class="test-bajada" data-en="Twenty questions in context — real sentences, not isolated grammar. It takes about 10 minutes and at the end you get your CEFR level (A1 to C1) with a recommendation.">Veinte preguntas en contexto: frases reales, no gramática suelta. Te toma unos 10 minutos y al final obtenés tu nivel según el Marco Común Europeo (A1 a C1) con una recomendación.</p>
 
+    <!-- Sólo aparece si hay un test a medias: va arriba, para no obligar a
+         quien vuelve a scrollear las instrucciones que ya leyó. -->
+    <button class="btn btn--fantasma-amarillo retomar" type="button" id="btn-continuar" data-evento="test-continuar" hidden>
+      <span data-en="Continue where you left off">Seguir donde quedaste</span>
+      <span id="continuar-detalle" style="opacity:.6"></span>
+    </button>
+
     <ul class="instrucciones">
       <li>
         <b>01</b>
@@ -119,6 +126,7 @@
         <span class="punto" aria-hidden="true"></span>
         <span data-en="Send me my result on WhatsApp">Mandarme el resultado por WhatsApp</span>
       </a>
+      <button class="btn btn--fantasma-claro" type="button" id="btn-compartir" data-evento="compartir-resultado" data-en="Share my result">Compartir mi resultado</button>
       <button class="btn btn--fantasma-claro" type="button" id="btn-reiniciar" data-en="Take it again">Volver a hacerlo</button>
     </div>
 
