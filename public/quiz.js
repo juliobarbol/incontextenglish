@@ -252,8 +252,18 @@ function pintarResultado() {
 
   $("res-nivel").textContent = nivel;
   $("res-nombre").textContent = en ? L.nombreEn : L.nombre;
+  /* Saltar cuenta igual que errar —quien saltea no sabía la respuesta—, pero
+     no es lo mismo de cara a quien lee su resultado: sin esto, «14/20» hace
+     pensar que erró seis cuando en realidad dejó tres en blanco. */
+  const salteadas = conRespuestas
+    ? estado.respuestas.filter((r) => r === -1 || r === undefined).length
+    : 0;
   $("res-puntaje").textContent =
-    puntaje + "/" + PREGUNTAS.length + (en ? " correct" : " correctas");
+    puntaje +
+    "/" +
+    PREGUNTAS.length +
+    (en ? " correct" : " correctas") +
+    (salteadas ? (en ? ` · ${salteadas} unanswered` : ` · ${salteadas} sin contestar`) : "");
   $("res-blurb").textContent = en ? L.blurbEn : L.blurb;
   $("res-curso").textContent = en ? L.cursoEn : L.curso;
   $("res-porque").textContent = en ? L.porqueEn : L.porque;

@@ -87,13 +87,17 @@ levante el nivel; la primera, que un buen acumulado lo levante sin dominar la
 banda. Se recorren las cinco bandas y gana la más alta que califica: **no se
 corta en la primera que falla**.
 
-Esa era la regla del prototipo (subir mientras la banda tuviera 3 de 4, cortando
-en la primera que fallara) y **daba resultados falsos**: fallar dos preguntas de
-A2 por distracción tapaba todo lo demás, así que se podía terminar con 18 de 20
-correctas y la pantalla diciendo «A1 · Principiante». Cambiada el 2/8/2026 a
-pedido explícito del dueño. Los umbrales van como proporción (`UMBRAL = 0.75`) y
-no como «3», para que sigan valiendo si alguna banda deja de tener cuatro
-preguntas.
+La regla anterior venía del prototipo —subir mientras la banda tuviera 3 de 4,
+cortando en la primera que fallara— y **daba resultados falsos**: fallar dos
+preguntas de A2 por distracción tapaba todo lo demás, así que se podía terminar
+con 18 de 20 correctas y la pantalla diciendo «A1 · Principiante». Cambiada el
+2/8/2026. Los umbrales van como proporción (`UMBRAL = 0.75`) y no como «3», para
+que sigan valiendo si alguna banda deja de tener cuatro preguntas.
+
+**Saltar cuenta igual que errar**, y es a propósito: quien saltea no sabía la
+respuesta. Lo que evita saltear es inflar el nivel adivinando, que con cuatro
+opciones acierta una de cada cuatro veces. El resultado sí las muestra aparte
+(«14/20 correctas · 3 sin contestar») porque si no parece que erró seis.
 
 **La regla no se ve mirando la pantalla: un cambio acá sale mal en silencio y
 manda gente al curso equivocado.** Por eso `npm run shots` la corre contra ocho
