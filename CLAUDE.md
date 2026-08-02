@@ -187,29 +187,38 @@ Está el conector **Cloudflare Developer Platform** (MCP). El Worker se llama
 `cronometro`: mirá su `modified_on` con `workers_list` antes y después del push.
 Si no cambió, el deploy no corrió o falló.
 
-### Qué rama publica, y por qué
+### Qué rama publica: sólo `main`
 
-**Ojo: hoy cualquier rama publica, no sólo `main`.** Comprobado el 2/8/2026: un
-push a una rama de trabajo salió a producción, sin merge de por medio.
+**Publica `main` y nada más.** Un push a una rama de trabajo se construye igual,
+pero queda como versión con URL de vista previa, sin tocar el sitio.
 
-La causa no es la rama. En Workers Builds hay dos comandos: el de despliegue,
-que corre para la rama de producción, y el **comando de versión**, que corre para
-las demás. El de versión viene por defecto en `npx wrangler versions upload`, que
-sube la versión **sin ponerla en vivo** y devuelve una URL de vista previa. Acá
-está puesto en `npx wrangler deploy`, que publica. De ahí que toda rama salga a
-producción.
+Son dos comandos distintos en Workers Builds, y conviene saber cuál es cuál
+porque de eso depende que un push salga o no en vivo:
 
-Se cambia en Compute (Workers) → `cronometro` → Configuración → Configuración de
-compilación → «Comando de versión». **Antes de dar por sentado en qué modo está,
-miralo ahí**, porque de eso depende si un push a una rama de trabajo sale en vivo:
+| Campo | Cuándo corre | Valor |
+|---|---|---|
+| Implementar comando | rama de producción (`main`) | `npx wrangler deploy` → publica |
+| Comando de rama no de producción | las demás ramas | `npx wrangler versions upload` → sube sin publicar |
 
-- si dice `npx wrangler deploy` → **cualquier push publica**;
-- si dice `npx wrangler versions upload` → sólo publica `main`, y las ramas de
-  trabajo suben una versión con URL de vista previa que hay que promover a mano.
+Están en Compute (Workers) → `cronometro` → Configuración → Configuración de
+compilación. Hasta el 2/8/2026 el segundo también decía `wrangler deploy`, y por
+eso cualquier rama salía a producción; se cambió ese día al valor por defecto de
+Cloudflare. **Si alguna vez un push a una rama de trabajo aparece en vivo, mirá
+ahí primero.**
 
-Mientras esté en el primer modo, **en `public/` no hay borrador**: cualquier push
-es el sitio en vivo. Por eso `npm run verificar` va antes del commit, no después,
-y no se pushea nada a medio hacer.
+Comprobado el 2/8/2026 con las dos mitades del hecho: el push subió una versión
+nueva (cambió `modified_on` del Worker) y el contenido en vivo quedó idéntico
+(mismo md5 de `quiz.js` antes y después). Comprobarlo con una sola de las dos
+engaña: si mirás nada más que el contenido, no distinguís «no publicó» de «el
+build todavía no corrió».
+
+**Por lo tanto, para publicar hay que fusionar a `main` y pushear `main`.** El
+flujo es: trabajar en la rama → `npm run verificar` → commit → push (queda en
+vista previa) → fusionar a `main` y pushear cuando esté aprobado.
+
+Eso no relaja la regla de siempre: `npm run verificar` va antes del commit, no
+después. La vista previa avisa de lo que se ve; no avisa de un `data-en` que
+falta ni de una etiqueta de medición repetida.
 
 Lo que todavía no puede publicarse **no se deja sin pushear: se guarda fuera de
 `public/`**, en `contenido/` (ver `contenido/README.md`). Workers sirve
@@ -219,11 +228,13 @@ Dejarlo sin pushear es peor que pushearlo: el trabajo queda sólo en la máquina
 donde se hizo, y en una sesión remota eso se pierde con el contenedor.
 
 **Terminar un cambio incluye pushearlo.** Pedido explícito del dueño (2/8/2026):
-no dejes trabajo terminado sólo commiteado en local esperando confirmación —
-como el deploy es automático, un cambio sin push es un cambio que no existe.
-El orden es siempre el mismo: `npm run verificar` → commit → `git push -u origin
-<rama>`. Lo único que no se pushea es lo que está a medio hacer o lo que el dueño
-pidió dejar sin publicar.
+no dejes trabajo terminado sólo commiteado en local esperando confirmación. El
+orden es siempre el mismo: `npm run verificar` → commit → `git push -u origin
+<rama>`. Pushear la rama de trabajo **no publica nada**, así que no hay motivo
+para retenerlo: lo único que no se pushea es lo que está a medio hacer.
+
+Fusionar a `main` es otra cosa, porque eso sí publica. Salvo que el dueño haya
+dicho lo contrario, preguntá antes de fusionar.
 
 Ese conector **no trae** el estado ni los logs de Workers Builds, ni analítica, ni
 purga de caché, ni DNS: para saber *por qué* falló un build hay que ir al panel de
