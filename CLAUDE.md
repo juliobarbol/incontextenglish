@@ -124,6 +124,18 @@ No se deduce del código, y el procedimiento completo está en el README:
   — es falsa alarma, la regla funciona.
 - Despliegue automático por Workers Builds conectado a este repo.
 
+### Comprobar si un push llegó a publicarse
+
+Está el conector **Cloudflare Developer Platform** (MCP). El Worker se llama
+`cronometro`: mirá su `modified_on` con `workers_list` antes y después del push.
+Si no cambió, el deploy no corrió — casi siempre porque pusheaste a una rama que
+no es la de producción de Workers Builds.
+
+Ese conector **no trae** el estado ni los logs de Workers Builds, ni analítica, ni
+purga de caché, ni DNS: para saber *por qué* falló un build hay que ir al panel de
+Cloudflare. Sí permite leer el código y los assets que están efectivamente en
+producción, útil para distinguir «no se desplegó» de «es caché».
+
 ## Pendientes de contenido
 
 Testimonios de alumnos (no existe la sección), fotos profesionales, y una página de
