@@ -24,7 +24,9 @@ const PREGUNTAS = [
   { banda: "B2", q: "The budget cuts ___ before anyone had a chance to object.", opts: ["approved", "were approved", "have approving", "was approve"], a: 1 },
   { banda: "B2", q: "I'd rather you ___ me before making that decision.", opts: ["called", "call", "would call", "have called"], a: 0 },
   { banda: "B2", q: "We need to ___ up with a solution by Monday.", opts: ["put", "come", "take", "look"], a: 1 },
-  { banda: "C1", q: "___ had I sent the email when the client replied.", opts: ["Hardly", "No sooner", "Rarely", "Barely"], a: 1 },
+  // «than», no «when»: la correlación es «no sooner… than». Con «when» las
+  // correctas eran «Hardly» y «Barely», y la marcada como buena era la mala.
+  { banda: "C1", q: "___ had I sent the email than the client replied.", opts: ["Hardly", "No sooner", "Rarely", "Barely"], a: 1 },
   { banda: "C1", q: "The proposal was turned down, which ___ the whole team.", opts: ["set back", "set off", "set out", "set up"], a: 0 },
   { banda: "C1", q: "Were it not for her feedback, the launch ___ a disaster.", opts: ["would be", "will have been", "would have been", "had been"], a: 2 },
   { banda: "C1", q: "His argument, ___ compelling, overlooked the cost side entirely.", opts: ["as", "while", "however", "albeit"], a: 3 },
