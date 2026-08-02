@@ -5,7 +5,10 @@
   "description": "Sitio de In Context English (incontextenglish.com.ar)",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "check": "node scripts/check.mjs",
+    "shots": "node scripts/shots.mjs",
+    "verificar": "npm run check && npm run shots"
   },
   "devDependencies": {
     "wrangler": "^4"

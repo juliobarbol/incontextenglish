@@ -1,0 +1,249 @@
+#!/usr/bin/env node
+/* ==========================================================================
+   npm run shots — capturas y prueba de humo del sitio.
+
+   Levanta public/ en un servidor propio (sin dependencias), abre el sitio con
+   Chromium y saca capturas a 1440px y 390px. El sitio nació de un diseño de
+   ancho fijo: las regresiones aparecen casi siempre en mobile.
+
+   Además hace de test: recorre el test de nivel entero, cambia de idioma, y
+   falla si aparece un error de JavaScript o un archivo local que no carga.
+
+   Las capturas van a .shots/ (ignorado por git).
+   ========================================================================== */
+
+import { createServer } from "node:http";
+import { readFile, mkdir, rm } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { join, extname, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { execSync } from "node:child_process";
+
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
+const PUBLIC = join(RAIZ, "public");
+const SALIDA = join(RAIZ, ".shots");
+
+/* ---------- Playwright: local o el global del entorno -------------------- */
+
+async function abrirChromium() {
+  const require = createRequire(import.meta.url);
+  const candidatos = [];
+  try {
+    candidatos.push(execSync("npm root -g", { encoding: "utf8" }).trim());
+  } catch {
+    /* npm puede no estar: seguimos con el resto */
+  }
+  candidatos.push("/opt/node22/lib/node_modules");
+
+  let playwright;
+  try {
+    playwright = require("playwright");
+  } catch {
+    for (const base of candidatos) {
+      const ruta = join(base, "playwright");
+      if (existsSync(ruta)) {
+        playwright = require(ruta);
+        break;
+      }
+    }
+  }
+  if (!playwright) {
+    console.error(
+      "No encontré Playwright.\n" +
+        "  En este entorno viene instalado; en tu máquina: npm i -g playwright && npx playwright install chromium\n"
+    );
+    process.exit(1);
+  }
+  return playwright.chromium.launch();
+}
+
+/* ---------- Servidor estático mínimo ------------------------------------- */
+
+const TIPOS = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".webp": "image/webp",
+  ".xml": "application/xml",
+  ".txt": "text/plain; charset=utf-8",
+};
+
+/** Lee public/_headers para servir las mismas cabeceras que Cloudflare.
+    Sin esto, una Content-Security-Policy mal escrita rompe en producción y acá
+    no se nota. */
+async function reglasDeCabeceras() {
+  const archivo = join(PUBLIC, "_headers");
+  if (!existsSync(archivo)) return [];
+  const reglas = [];
+  for (const linea of (await readFile(archivo, "utf8")).split("\n")) {
+    if (!linea.trim() || linea.trim().startsWith("#")) continue;
+    if (!/^\s/.test(linea)) {
+      reglas.push({ patron: new RegExp("^" + linea.trim().replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$"), cabeceras: {} });
+    } else if (reglas.length) {
+      const i = linea.indexOf(":");
+      if (i > 0) reglas.at(-1).cabeceras[linea.slice(0, i).trim()] = linea.slice(i + 1).trim();
+    }
+  }
+  return reglas;
+}
+
+async function levantarServidor() {
+  const reglas = await reglasDeCabeceras();
+  const server = createServer(async (req, res) => {
+    let ruta = decodeURIComponent(req.url.split("?")[0]);
+    if (ruta.endsWith("/")) ruta += "index.html";
+    let archivo = join(PUBLIC, ruta);
+    if (!existsSync(archivo)) {
+      archivo = join(PUBLIC, "404.html");
+      res.statusCode = 404;
+    }
+    try {
+      const cuerpo = await readFile(archivo);
+      res.setHeader("Content-Type", TIPOS[extname(archivo)] ?? "application/octet-stream");
+      for (const regla of reglas) {
+        if (regla.patron.test(ruta)) {
+          for (const [k, v] of Object.entries(regla.cabeceras)) res.setHeader(k, v);
+        }
+      }
+      res.end(cuerpo);
+    } catch {
+      res.statusCode = 500;
+      res.end("error");
+    }
+  });
+  return new Promise((resolve) => {
+    server.listen(0, "127.0.0.1", () => resolve({ server, puerto: server.address().port }));
+  });
+}
+
+/* ---------- Corrida ------------------------------------------------------- */
+
+const problemas = [];
+const ANCHOS = [
+  { nombre: "escritorio", width: 1440, height: 900 },
+  { nombre: "mobile", width: 390, height: 844 },
+];
+
+const { server, puerto } = await levantarServidor();
+const base = `http://127.0.0.1:${puerto}`;
+const navegador = await abrirChromium();
+
+await rm(SALIDA, { recursive: true, force: true });
+await mkdir(SALIDA, { recursive: true });
+
+async function nuevaPagina(viewport, donde) {
+  const ctx = await navegador.newContext({ viewport, deviceScaleFactor: 2 });
+  const page = await ctx.newPage();
+  page.on("pageerror", (e) => problemas.push(`${donde}: error de JS — ${e.message}`));
+  page.on("console", (m) => {
+    if (m.type() !== "error") return;
+    // Los recursos externos (tipografías de Google) y el 404 que probamos a
+    // propósito también escriben en consola: eso no es una regresión del sitio.
+    const origen = m.location()?.url ?? "";
+    if (origen && !origen.startsWith(base)) return;
+    if (origen.includes("/no-existe")) return;
+    problemas.push(`${donde}: consola — ${m.text()}`);
+  });
+  page.on("requestfailed", (r) => {
+    const url = r.url();
+    const fallo = r.failure()?.errorText ?? "falló";
+    if (url.startsWith(base)) problemas.push(`${donde}: no carga ${url.replace(base, "")} — ${fallo}`);
+    else console.log(`  · recurso externo no disponible (normal sin red): ${new URL(url).host}`);
+  });
+  page.on("response", (r) => {
+    if (r.url().startsWith(base) && r.status() >= 400 && !r.url().includes("/no-existe")) {
+      problemas.push(`${donde}: ${r.status()} en ${r.url().replace(base, "")}`);
+    }
+  });
+  return { ctx, page };
+}
+
+const capturar = async (page, nombre) => {
+  await page.screenshot({ path: join(SALIDA, `${nombre}.png`), fullPage: true });
+  console.log(`  ✓ .shots/${nombre}.png`);
+};
+
+/* Home y test, en los dos anchos */
+for (const vp of ANCHOS) {
+  const { ctx, page } = await nuevaPagina(vp, vp.nombre);
+
+  await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  await capturar(page, `home-${vp.nombre}`);
+
+  await page.goto(`${base}/test-de-nivel/`, { waitUntil: "networkidle" });
+  await capturar(page, `test-intro-${vp.nombre}`);
+
+  await ctx.close();
+}
+
+/* El test de punta a punta: 20 respuestas y pantalla de resultado */
+{
+  const { ctx, page } = await nuevaPagina(ANCHOS[0], "test completo");
+  await page.goto(`${base}/test-de-nivel/`, { waitUntil: "networkidle" });
+  await page.click("#btn-empezar");
+
+  const total = await page.evaluate(() => PREGUNTAS.length);
+  await capturar(page, "test-pregunta");
+  for (let i = 0; i < total; i++) {
+    await page.click(".opcion >> nth=0");
+  }
+
+  const visible = await page.isVisible("#pantalla-resultado");
+  if (!visible) problemas.push("test completo: contesté las 20 preguntas y no apareció el resultado");
+
+  const nivel = (await page.textContent("#res-nivel"))?.trim();
+  if (!nivel) problemas.push("test completo: la pantalla de resultado quedó sin nivel");
+  else console.log(`  · el test terminó y dio nivel ${nivel}`);
+
+  await capturar(page, "test-resultado");
+
+  /* El resultado se genera por JS: comprobamos que el cambio de idioma lo repinta */
+  const antes = await page.textContent("#res-blurb");
+  await page.evaluate(() => aplicarIdioma("en"));
+  const despues = await page.textContent("#res-blurb");
+  if (antes === despues) {
+    problemas.push(
+      "el resultado del test no se tradujo al pasar a inglés — se rompió el evento «idiomacambiado» (ver CLAUDE.md)"
+    );
+  } else {
+    console.log("  · el resultado del test se traduce al cambiar de idioma");
+  }
+  await capturar(page, "test-resultado-en");
+  await ctx.close();
+}
+
+/* Home en inglés */
+{
+  const { ctx, page } = await nuevaPagina(ANCHOS[0], "home EN");
+  await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  await page.click("[data-lang-btn]");
+  const h1 = await page.textContent("h1");
+  if (!/Speak English/i.test(h1 ?? "")) problemas.push(`home EN: el titular quedó en «${h1?.trim()}»`);
+  await capturar(page, "home-en");
+  await ctx.close();
+}
+
+/* 404 */
+{
+  const { ctx, page } = await nuevaPagina(ANCHOS[0], "404");
+  await page.goto(`${base}/no-existe`, { waitUntil: "networkidle" });
+  await capturar(page, "404");
+  await ctx.close();
+}
+
+await navegador.close();
+server.close();
+
+/* ---------- Informe ------------------------------------------------------- */
+
+if (problemas.length) {
+  console.log("\nPROBLEMAS\n");
+  for (const p of problemas) console.log(`  ✕ ${p}`);
+  console.log(`\n✕ ${problemas.length} ${problemas.length === 1 ? "problema" : "problemas"}. Capturas en .shots/\n`);
+  process.exit(1);
+}
+console.log("\n✓ Sin errores de JS ni recursos rotos. Capturas en .shots/\n");

@@ -11,6 +11,10 @@ con SEO y con el formulario funcionando.
 ## Estructura
 
 ```
+scripts/
+  check.mjs               validador del sitio (npm run check)
+  shots.mjs               capturas + prueba de humo (npm run shots)
+.claude/                  configuración de Claude Code: comandos y verificación automática
 public/
   index.html              home
   test-de-nivel/          test de nivel (20 preguntas, resultado A1–C1)
@@ -35,6 +39,22 @@ O sin instalar nada:
 ```bash
 cd public && python3 -m http.server 8788
 ```
+
+## Verificar antes de publicar
+
+```bash
+npm run verificar    # = npm run check && npm run shots
+```
+
+- `npm run check` revisa que el sitio sea consistente: enlaces y assets que no
+  existen, textos nuevos sin su traducción `data-en`, el número de WhatsApp
+  desincronizado entre archivos, referencias del test que ya no están en el HTML,
+  canonical y sitemap. Tarda menos de un segundo y no instala nada.
+- `npm run shots` abre el sitio en Chromium, deja capturas a 1440px y 390px en
+  `.shots/`, hace el test de nivel completo y avisa si hay algún error de
+  JavaScript o un archivo que no carga.
+
+Si `check` falla, el sitio tiene un problema real: no publiques hasta arreglarlo.
 
 ## Publicar
 
@@ -95,6 +115,28 @@ No manda mails: al enviarlo arma el mensaje y abre WhatsApp con todo escrito.
 Así el sitio no necesita backend ni servicio de correo, y la consulta le llega a
 Vicky por el canal que ya usa. Si en algún momento se quiere recibir por mail,
 hay que sumar un servicio tipo Formspree o una Worker Function.
+
+## Trabajar con Claude Code
+
+El repo trae comandos propios (se escriben con `/` en Claude Code):
+
+| Comando | Qué hace |
+| --- | --- |
+| `/revisar` | Corre las dos verificaciones y mira las capturas, incluida la de mobile |
+| `/texto` | Cambia textos del sitio manteniendo el `data-en` en sincronía |
+| `/publicar` | Verifica, commitea y hace push (el deploy sale solo) |
+
+Además, `.claude/settings.json` deja corriendo el validador después de cada
+edición en `public/`, así un `data-en` olvidado o un enlace roto se detectan en el
+momento y no cuando alguien abre la página.
+
+## Cabeceras y seguridad
+
+`public/_headers` define caché y seguridad. Incluye una **Content-Security-Policy**
+que sólo permite scripts propios y tipografías de Google. Si alguna vez se suma un
+script externo (analítica, chat, píxel), hay que agregarlo ahí o el navegador lo va
+a bloquear en silencio. `npm run shots` aplica estas mismas cabeceras localmente,
+así que una CSP mal escrita se detecta antes de publicar.
 
 ## Pendientes
 

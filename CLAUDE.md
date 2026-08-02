@@ -10,19 +10,36 @@ El repositorio y su documentación están en castellano. Seguí en castellano.
 ## Comandos
 
 ```bash
-npm run dev      # wrangler dev
+npm run check    # validador del sitio (rápido, sin dependencias)
+npm run shots    # capturas 1440/390 + prueba de humo con Chromium
+npm run verificar  # los dos, en orden
+npm run dev      # wrangler dev (respeta _headers, útil para probar la CSP)
 npm run deploy   # wrangler deploy
-cd public && python3 -m http.server 8788   # alternativa sin instalar nada
 ```
 
-**No hay build, ni tests, ni linter.** Lo que está en `public/` es byte por byte lo
-que se publica. No agregues un bundler ni un framework sin que te lo pidan: la
-ausencia de toolchain es deliberada, permite que cualquiera edite un HTML y publique.
+**No hay build, ni bundler, ni framework.** Lo que está en `public/` es byte por
+byte lo que se publica, y eso es deliberado: permite que cualquiera edite un HTML
+y publique. No agregues toolchain sin que te lo pidan.
 
-Para verificar cambios visuales hay Chromium con Playwright en el entorno
-(`/opt/node22/lib/node_modules/playwright`). Levantá el server local y sacá
-capturas a 1440px y 390px — el sitio nació de un diseño de ancho fijo y las
-regresiones de layout aparecen casi siempre en mobile.
+Lo que sí hay es verificación, porque las roturas de este sitio son silenciosas:
+
+- **`npm run check`** (`scripts/check.mjs`) — enlaces y assets que no existen,
+  textos sin `data-en`, el número de WhatsApp desincronizado entre archivos, ids
+  que `quiz.js` busca y el HTML ya no tiene, orden de los `<script>`, canonical /
+  og:url / sitemap. Sale con código 1 si hay errores.
+- **`npm run shots`** (`scripts/shots.mjs`) — levanta `public/` aplicando las
+  cabeceras de `_headers` (así una CSP mal escrita se nota acá y no en producción),
+  abre Chromium y deja capturas en `.shots/`. Además recorre el test de nivel
+  entero, comprueba que el resultado se traduzca al cambiar de idioma, y falla si
+  hay error de JS o un recurso local que no carga.
+
+**Mirá siempre `.shots/home-mobile.png`**: el sitio nació de un diseño de ancho
+fijo y las regresiones de layout aparecen casi siempre en mobile. Las capturas se
+sacan sin las tipografías de Google (no hay salida a internet en el sandbox), así
+que sirven para layout, no para juzgar la tipografía fina.
+
+Un hook de `.claude/settings.json` corre `check` solo después de cada edición en
+`public/`, así que si rompés algo te enterás en el mismo turno.
 
 ## Arquitectura
 
@@ -76,12 +93,18 @@ original — está portada tal cual y no hay que "mejorarla" sin pedido explíci
 
 ## Trampas conocidas
 
-- **El número de WhatsApp está repetido en cuatro lugares**: `WA` en `app.js`,
-  `WA_TEST` en `quiz.js`, y los `href="https://wa.me/..."` de los dos HTML. Si lo
-  cambian, cambialo en todos.
+- **El número de WhatsApp está repetido en varios lugares**: `WA` en `app.js`,
+  `WA_TEST` en `quiz.js`, los `href="https://wa.me/..."` de los HTML, y el
+  `telephone` del JSON-LD de la home. Se deja repetido a propósito (centralizarlo
+  exigiría inyectar los links por JS y perderlos para Google). `npm run check`
+  falla si dejan de coincidir, así que cambialo en todos y corré el check.
 - **Grillas con imágenes**: los hijos de grid tienen `min-width:auto` y una imagen
   ancha revienta la columna. Hay un bloque en `styles.css` que pone `min-width:0`
   en las grillas existentes; una grilla nueva con imagen adentro necesita lo mismo.
+- **Hay una CSP en `public/_headers`.** Sólo permite scripts propios y las
+  tipografías de Google. Si sumás analítica, un chat o un píxel, agregá su dominio
+  ahí o el navegador lo bloquea sin decir nada. `npm run shots` aplica esas
+  cabeceras localmente, así que el bloqueo aparece en la corrida.
 - **Los `<button>` traen fondo propio del navegador.** `.btn` fuerza
   `background: transparent` para que las variantes fantasma se vean igual en `<a>`
   y en `<button>`. No lo saques.
