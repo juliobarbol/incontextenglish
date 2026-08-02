@@ -37,8 +37,8 @@
       <img src="/assets/logo.png" alt="In Context English" width="414" height="200">
     </a>
     <div class="header-acciones">
-      <button class="lang-btn" type="button" data-lang-btn aria-label="Cambiar idioma / Switch language">ES / <span style="opacity:.45">EN</span></button>
-      <a class="volver" href="/" data-en="← Back to home">← Volver al inicio</a>
+      <button class="lang-btn" type="button" data-evento="idioma" data-lang-btn aria-label="Cambiar idioma / Switch language">ES / <span style="opacity:.45">EN</span></button>
+      <a class="volver" data-evento="volver-inicio" href="/" data-en="← Back to home">← Volver al inicio</a>
     </div>
   </div>
 </header>
@@ -115,7 +115,7 @@
     </div>
 
     <div class="resultado-ctas">
-      <a class="btn btn--wa" id="res-wa" href="#" target="_blank" rel="noopener">
+      <a class="btn btn--wa" data-evento="wa-resultado" id="res-wa" href="#" target="_blank" rel="noopener">
         <span class="punto" aria-hidden="true"></span>
         <span data-en="Send me my result on WhatsApp">Mandarme el resultado por WhatsApp</span>
       </a>

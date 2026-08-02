@@ -130,18 +130,32 @@ Además, `.claude/settings.json` deja corriendo el validador después de cada
 edición en `public/`, así un `data-en` olvidado o un enlace roto se detectan en el
 momento y no cuando alguien abre la página.
 
-## Qué se mide del test de nivel
+## Qué se mide
 
-Antes no quedaba rastro de nadie: si la persona terminaba el test y no apretaba
-enviar en WhatsApp, no había forma de saber que había existido. Ahora el sitio
-anota, de forma anónima, cuántas personas **empiezan** el test y cuántas lo
-**terminan**, con qué nivel, en qué idioma y desde qué país.
+Antes no quedaba rastro de nada: si alguien terminaba el test y no apretaba
+enviar en WhatsApp, no había forma de saber que había existido. Hoy el sitio
+anota, de forma anónima:
 
-**No se guarda nada personal**: ni mail, ni nombre, ni IP, ni las respuestas.
+| Qué | Para qué sirve |
+| --- | --- |
+| Visitas a cada página | Es el denominador: sin esto, «diez clics» no dice nada |
+| Clic en cada botón, por separado | Hay ocho links a WhatsApp; importa saber *cuál* convierte |
+| Envío del formulario | Hoy no se sabe si alguien lo usa |
+| Hasta dónde se scrollea (25/50/75/100 %) | Si no llegan a «Cursos», el problema es el hero |
+| Cambio a inglés | Dice si el trabajo bilingüe le sirve a alguien |
+| Test empezado y terminado, con nivel | Si el test convierte, y en qué nivel está la gente |
+
+**No se guarda nada personal**: ni mail, ni nombre, ni IP, ni las respuestas. Y
+los eventos **no se correlacionan entre sí** — no hay identificador de visita, así
+que se puede saber «hubo 200 visitas y 30 clics a WhatsApp», pero no seguir a una
+persona por el sitio. Por eso no hace falta cartel de cookies.
 
 Vive en `src/index.js` (un endpoint, `POST /api/evento`) y en una base D1 llamada
 `incontextenglish`, con el esquema en `schema.sql`. El registro es descartable a
-propósito: si falla, la persona ve su resultado igual y no se entera de nada.
+propósito: si falla, la persona no se entera de nada.
+
+Para empezar a contar un botón nuevo alcanza con ponerle `data-evento="etiqueta"`
+en el HTML.
 
 Para desarrollo local hay que crear la tabla una vez:
 

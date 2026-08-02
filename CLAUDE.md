@@ -86,15 +86,25 @@ original — está portada tal cual y no hay que "mejorarla" sin pedido explíci
 `wrangler.jsonc` lo limita a esa ruta: cualquier otra la sirve Workers directo
 desde `public/`, sin pasar por el script. El sitio sigue siendo estático.
 
-Recibe `POST /api/evento` y anota en D1 (binding `DB`, tabla `eventos_test`,
-esquema en `schema.sql`) cuánta gente empieza el test y cuánta lo termina, con qué
-nivel. **No guarda nada personal**: ni mail, ni nombre, ni IP, ni las respuestas.
-Sólo nivel, puntaje, idioma y país.
+Recibe `POST /api/evento` y anota en D1 (binding `DB`, tabla `eventos`, esquema
+en `schema.sql`) el uso del sitio: `pagina`, `clic`, `scroll`, `inicio` y
+`resultado`. **No guarda nada personal** —ni mail, ni nombre, ni IP, ni las
+respuestas— y **los eventos no se correlacionan entre sí**: no hay identificador
+de visita, así que se puede contar «200 visitas y 30 clics» pero no seguir a
+nadie por el sitio. Eso es deliberado; no le agregues un id de sesión.
 
-Del lado del cliente es `registrar()` en `quiz.js`, y es deliberadamente
+Del lado del cliente es `registrar()` en **`app.js`** (lo cargan todas las
+páginas; `quiz.js` la usa para los eventos del test). Es deliberadamente
 descartable: va con `keepalive`, ignora la respuesta y se traga cualquier error.
-**Si el registro falla, el test tiene que seguir funcionando igual.** No lo
+**Si el registro falla, el sitio tiene que seguir funcionando igual.** No lo
 conviertas en `await` ni le pongas manejo de errores visible.
+
+**Para contar un elemento nuevo, ponele `data-evento="etiqueta"` en el HTML** y
+listo: hay un listener delegado. Es explícito a propósito, porque hay ocho links
+a WhatsApp con el mismo `href` y lo que interesa es saber cuál se toca. Las
+etiquetas van en minúsculas, con números y guiones, hasta 40 caracteres — el
+Worker rechaza cualquier otra cosa y `npm run check` avisa si una se repite en la
+misma página (si no, los clics de los dos elementos se suman sin que se note).
 
 Para consultar los datos no hace falta panel: el conector de Cloudflare permite
 `d1_database_query` sobre la base `incontextenglish`.

@@ -5,14 +5,18 @@
    este script sólo corra para /api/*. Todo lo demás lo sirve Workers directo
    desde public/, sin pasar por acá.
 
-   Existe para una sola cosa: anotar cuánta gente empieza el test de nivel y
-   cuánta lo termina, y con qué nivel. No guarda nada personal — ni mail, ni
-   nombre, ni IP, ni las respuestas. Sólo el agregado que hace falta para saber
-   si el test sirve.
+   Existe para anotar el uso del sitio: visitas, qué se toca, hasta dónde se
+   scrollea, y cuánta gente empieza y termina el test de nivel. No guarda nada
+   personal — ni mail, ni nombre, ni IP, ni las respuestas — y los eventos no se
+   correlacionan entre sí: se cuentan sueltos, no hay identificador de visita.
    ========================================================================== */
 
 const NIVELES = ["A1", "A2", "B1", "B2", "C1"];
-const EVENTOS = ["inicio", "resultado"];
+const EVENTOS = ["pagina", "clic", "scroll", "inicio", "resultado"];
+
+/* Etiquetas y rutas: sólo lo que puede salir del propio sitio. Sin esto, el
+   endpoint es una invitación a llenar la base de basura. */
+const DETALLE_OK = /^[a-z0-9/-]{1,40}$/;
 
 const entero = (v, max) => Number.isInteger(v) && v >= 0 && v <= max;
 
@@ -36,11 +40,24 @@ export default {
       return new Response("JSON inválido", { status: 400 });
     }
 
-    const { evento, nivel = null, puntaje = null, contestadas = null, idioma = null } = cuerpo ?? {};
+    const {
+      evento,
+      detalle = null,
+      nivel = null,
+      puntaje = null,
+      contestadas = null,
+      idioma = null,
+    } = cuerpo ?? {};
 
     if (!EVENTOS.includes(evento)) return new Response("Evento desconocido", { status: 400 });
     if (idioma !== null && idioma !== "es" && idioma !== "en") {
       return new Response("Idioma inválido", { status: 400 });
+    }
+    if (detalle !== null && (typeof detalle !== "string" || !DETALLE_OK.test(detalle))) {
+      return new Response("Detalle inválido", { status: 400 });
+    }
+    if ((evento === "pagina" || evento === "clic" || evento === "scroll") && !detalle) {
+      return new Response("Falta el detalle", { status: 400 });
     }
 
     if (evento === "resultado") {
@@ -53,11 +70,12 @@ export default {
 
     try {
       await env.DB.prepare(
-        `INSERT INTO eventos_test (evento, nivel, puntaje, contestadas, idioma, pais)
-         VALUES (?, ?, ?, ?, ?, ?)`
+        `INSERT INTO eventos (evento, detalle, nivel, puntaje, contestadas, idioma, pais)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
       )
         .bind(
           evento,
+          detalle,
           evento === "resultado" ? nivel : null,
           evento === "resultado" ? puntaje : null,
           evento === "resultado" ? contestadas : null,

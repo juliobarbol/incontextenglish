@@ -3,6 +3,7 @@
    1) selector de idioma ES/EN con persistencia
    2) menú mobile
    3) formulario de contacto -> WhatsApp (sin backend)
+   4) registro anónimo de uso (visitas, clics, scroll)
    ========================================================================== */
 
 const WA = "5493515645110";
@@ -123,7 +124,69 @@ function iniciarFormulario() {
 
     const texto = lineas.filter(Boolean).join(" ");
     window.open(`https://wa.me/${WA}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+    // Acá, y no en el botón: sólo cuenta si el formulario pasó la validación.
+    registrar("clic", { detalle: "formulario-enviado" });
   });
+}
+
+/* ---------- 4. Registro anónimo ------------------------------------------ */
+
+/* Manda un evento a /api/evento y se olvida. No guarda nada personal y los
+   eventos no se correlacionan entre sí: se cuentan sueltos, así que se puede
+   saber «hubo 200 visitas y 30 clics a WhatsApp» pero nunca seguir a alguien
+   por el sitio. Si falla, falla en silencio: esto no puede molestar a nadie.
+
+   La usa también quiz.js para los eventos del test — por eso vive acá, que es
+   el script que cargan todas las páginas. */
+function registrar(evento, datos = {}) {
+  try {
+    fetch("/api/evento", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ evento, idioma: idiomaActual(), ...datos }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    /* navegador viejo o sin fetch: seguimos igual */
+  }
+}
+
+/* Los elementos que queremos contar llevan data-evento="etiqueta" en el HTML.
+   Es explícito a propósito: hay siete links a WhatsApp con el mismo href y lo
+   que interesa es saber cuál de todos se toca. */
+function iniciarClics() {
+  document.addEventListener(
+    "click",
+    (e) => {
+      const el = e.target.closest("[data-evento]");
+      if (el) registrar("clic", { detalle: el.dataset.evento });
+    },
+    { capture: true }
+  );
+}
+
+/* Hasta dónde llega la gente. Cada umbral se manda una sola vez por visita. */
+function iniciarScroll() {
+  const pendientes = [25, 50, 75, 100];
+  const medir = () => {
+    const alto = document.documentElement.scrollHeight - window.innerHeight;
+    if (alto <= 0) return;
+    const pct = ((window.scrollY / alto) * 100);
+    while (pendientes.length && pct >= pendientes[0]) {
+      registrar("scroll", { detalle: String(pendientes.shift()) });
+    }
+    if (!pendientes.length) window.removeEventListener("scroll", alPasar);
+  };
+  let esperando = false;
+  const alPasar = () => {
+    if (esperando) return;
+    esperando = true;
+    requestAnimationFrame(() => {
+      esperando = false;
+      medir();
+    });
+  };
+  window.addEventListener("scroll", alPasar, { passive: true });
 }
 
 /* ---------- Arranque ----------------------------------------------------- */
@@ -136,4 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-lang-btn]").forEach((b) => {
     b.addEventListener("click", () => aplicarIdioma(idiomaActual() === "en" ? "es" : "en"));
   });
+
+  registrar("pagina", { detalle: location.pathname });
+  iniciarClics();
+  iniciarScroll();
 });

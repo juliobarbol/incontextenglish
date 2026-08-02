@@ -252,14 +252,28 @@ for (const vp of ANCHOS) {
   await ctx.close();
 }
 
-/* Home en inglés */
+/* Home en inglés — y de paso, que la medición de visitas y clics funcione */
 {
   const { ctx, page } = await nuevaPagina(ANCHOS[0], "home EN");
+  const antes = eventosRecibidos.length;
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(300);
+
+  const visita = eventosRecibidos.slice(antes).find((e) => e.evento === "pagina");
+  if (!visita) problemas.push("la home no registró la visita");
+  else if (visita.detalle !== "/") problemas.push(`la visita se registró como "${visita.detalle}"`);
+
   await page.click("[data-lang-btn]");
   const h1 = await page.textContent("h1");
   if (!/Speak English/i.test(h1 ?? "")) problemas.push(`home EN: el titular quedó en «${h1?.trim()}»`);
   await capturar(page, "home-en");
+
+  await page.waitForTimeout(300);
+  const clic = eventosRecibidos.slice(antes).find((e) => e.evento === "clic");
+  if (!clic) problemas.push("el clic al botón de idioma no se registró");
+  else if (clic.detalle !== "idioma") problemas.push(`el clic se registró como "${clic.detalle}"`);
+  else console.log("  · se registran las visitas y los clics");
+
   await ctx.close();
 }
 

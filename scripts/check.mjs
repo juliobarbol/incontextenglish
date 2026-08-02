@@ -218,6 +218,29 @@ if (paginaTest && quiz) {
 }
 
 /* ==========================================================================
+   4 bis. Etiquetas de medición: únicas por página y con el formato que acepta
+   el Worker. Dos elementos con la misma etiqueta se suman sin que se note, y
+   una etiqueta con mayúsculas o acentos la rechaza el endpoint en silencio.
+   ========================================================================== */
+
+const FORMATO_ETIQUETA = /^[a-z0-9/-]{1,40}$/;
+
+for (const archivo of paginas) {
+  const vistas = new Map();
+  for (const m of leer(archivo).matchAll(/\bdata-evento\s*=\s*"([^"]*)"/g)) {
+    vistas.set(m[1], (vistas.get(m[1]) ?? 0) + 1);
+  }
+  for (const [etiqueta, veces] of vistas) {
+    if (!FORMATO_ETIQUETA.test(etiqueta)) {
+      error(rel(archivo), `data-evento="${etiqueta}" no lo acepta el endpoint (minúsculas, números y guiones, hasta 40)`);
+    }
+    if (veces > 1) {
+      error(rel(archivo), `data-evento="${etiqueta}" está ${veces} veces: los clics de los dos se van a sumar juntos`);
+    }
+  }
+}
+
+/* ==========================================================================
    5. Orden de scripts: app.js antes que quiz.js, los dos con defer
    ========================================================================== */
 

@@ -88,22 +88,8 @@ const estado = { pantalla: "intro", i: 0, respuestas: [] };
 const $ = (id) => document.getElementById(id);
 const enIngles = () => document.documentElement.lang === "en";
 
-/* ---------- Registro anónimo (para saber si el test sirve) --------------- */
-
-/* Manda el evento a /api/evento y se olvida. No guarda nada personal y nunca
-   puede molestar a quien está haciendo el test: si falla, falla en silencio. */
-function registrar(evento, datos = {}) {
-  try {
-    fetch("/api/evento", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ evento, idioma: enIngles() ? "en" : "es", ...datos }),
-      keepalive: true,
-    }).catch(() => {});
-  } catch {
-    /* navegador viejo o sin fetch: seguimos igual */
-  }
-}
+/* `registrar()` vive en app.js, que carga antes que este script en todas las
+   páginas. Acá sólo se usa para los dos eventos del test. */
 
 /* ---------- Cálculo del nivel (misma lógica que el prototipo) ------------ */
 
