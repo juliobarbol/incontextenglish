@@ -243,5 +243,16 @@ producción, útil para distinguir «no se desplegó» de «es caché».
 
 ## Pendientes de contenido
 
-Testimonios de alumnos (no existe la sección), fotos profesionales, y una página de
-precios — hoy "Todos los niveles y precios" apunta a WhatsApp.
+Fotos profesionales (las actuales son selfies) y una página de precios — hoy
+"Todos los niveles y precios" apunta a WhatsApp.
+
+Los testimonios ya tienen sección (`#testimonios` en la home, 6/8/2026). Salieron
+de capturas de WhatsApp que pasó Victoria, y por eso hay dos reglas:
+
+- **Van con nombre de pila o inicial, nunca con el apellido completo.** Son
+  mensajes privados; el alumno mandó eso a su profesora, no al sitio.
+- **Antes de publicar un testimonio nuevo hay que tener el permiso del alumno.**
+  Si no consta que lo dio, el texto va a `contenido/`, no a `public/`.
+
+Las citas están editadas para que se lean: se unieron mensajes seguidos de la
+misma persona y se sacaron los emojis, sin cambiar lo que dijeron.
