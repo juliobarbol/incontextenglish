@@ -174,6 +174,7 @@ así que una CSP mal escrita se detecta antes de publicar.
 ## Pendientes
 
 - Fotos: las actuales son selfies. Con fotos hechas para la web el hero gana mucho.
-- Testimonios de alumnos: la sección no existe todavía y es lo que más convierte.
 - Precios: hoy «Todos los niveles y precios» lleva a WhatsApp; si se publican,
   conviene una página propia.
+- Testimonios: la sección ya está (`#testimonios`, tres citas). Para sumar más,
+  ver la nota de CLAUDE.md: nombre de pila y permiso del alumno.
