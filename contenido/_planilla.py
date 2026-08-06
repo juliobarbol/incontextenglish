@@ -1,10 +1,21 @@
 import json
+import subprocess
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.utils import get_column_letter
 
-datos = json.load(open("contenido/preguntas-propuestas.json", encoding="utf8"))["preguntas"]
+# El banco vive en public/quiz.js, que es lo que se publica. Se lee de ahí y no
+# de una copia en contenido/: dos copias se desincronizan sin que nadie lo note.
+EXTRAER = """
+const fs = require("fs");
+const src = fs.readFileSync("public/quiz.js", "utf8");
+const banco = eval(src.match(/const BANCO = (\\[[\\s\\S]*?\\n\\]);/)[1]);
+process.stdout.write(JSON.stringify(banco));
+"""
+datos = json.loads(subprocess.run(["node", "-e", EXTRAER], capture_output=True,
+                                  text=True, check=True).stdout)
+
 LETRAS = ["A", "B", "C", "D"]
 
 BORDO = "6E1112"
@@ -38,19 +49,18 @@ filas = [
     ("Test de nivel de In Context English — revisión del banco de preguntas", titulo),
     ("", None),
     ("Qué es esto", Font(name=fuente, size=11, bold=True)),
-    ("Una propuesta de 50 preguntas nuevas para el test de nivel del sitio, 10 por cada banda "
-     "(A1, A2, B1, B2 y C1). Hoy el test tiene 20 preguntas fijas: siempre las mismas y en el "
-     "mismo orden. Con este banco, cada persona recibe 4 preguntas sorteadas de cada banda, así "
-     "que dos personas no hacen el mismo test y no se puede memorizar.", normal),
+    ("El banco de preguntas del test de nivel del sitio, tal como está publicado hoy: 10 por cada "
+     "banda (A1, A2, B1, B2 y C1). Cada persona que hace el test recibe 4 sorteadas de cada banda, "
+     "así que dos personas no hacen el mismo test y no se puede memorizar repitiéndolo.", normal),
     ("", None),
-    ("Nada de esto está publicado todavía. Se sube al sitio recién después de tu revisión.",
+    ("Esta planilla se genera leyendo el sitio, así que siempre muestra lo que está en vivo. "
+     "Nada cambia hasta que devuelvas el archivo.",
      Font(name=fuente, size=10, bold=True, color=BORDO)),
     ("", None),
-    ("Qué cambió respecto de las preguntas actuales", Font(name=fuente, size=11, bold=True)),
-    ("Antes eran frases sueltas («She ___ from Argentina»). Ahora cada pregunta es un intercambio "
-     "corto de dos líneas, casi siempre en una situación de trabajo: una reunión, un mail, una "
-     "llamada. La idea es que el test se parezca al método que enseñás, en vez de tomar gramática "
-     "aislada.", normal),
+    ("Cómo están escritas", Font(name=fuente, size=11, bold=True)),
+    ("Cada pregunta es un intercambio corto de dos líneas, casi siempre en una situación de "
+     "trabajo: una reunión, un mail, una llamada. La idea es que el test se parezca al método que "
+     "enseñás, en vez de tomar gramática aislada.", normal),
     ("", None),
     ("Qué te pedimos", Font(name=fuente, size=11, bold=True)),
     ("En la hoja «Preguntas», completá las dos últimas columnas, que están pintadas de amarillo. "
@@ -80,7 +90,7 @@ for texto, estilo in filas:
 ejemplo_cab = ["Nº", "Banda", "Pregunta", "Correcta", "¿Va?", "Comentario"]
 ejemplo_val = [
     17, "A2", "— Is the new system better?\n— It's ___ than the old one, yes.", "A (faster)",
-    "Cambiar", "Está bien, pero para A2 pondría «easier to use» en lugar de «faster»: se usa más.",
+    "Cambiar", "Para A2 pondría «easier to use» en lugar de «faster»: se usa más.",
 ]
 f += 1
 for col, (h, v) in enumerate(zip(ejemplo_cab, ejemplo_val), start=1):
@@ -112,9 +122,9 @@ ws = wb.create_sheet("Preguntas")
 ws.sheet_view.showGridLines = False
 
 cols = [
-    ("Nº", 6), ("Banda", 8), ("Foco gramatical", 26), ("Contexto", 24),
-    ("Pregunta", 52), ("Opción A", 17), ("Opción B", 17), ("Opción C", 17), ("Opción D", 17),
-    ("Correcta", 10), ("Origen", 22), ("¿Va?", 12), ("Comentario", 46),
+    ("Nº", 6), ("Banda", 8), ("Foco gramatical", 26), ("Pregunta", 54),
+    ("Opción A", 17), ("Opción B", 17), ("Opción C", 17), ("Opción D", 17),
+    ("Correcta", 18), ("¿Va?", 12), ("Comentario", 48),
 ]
 for i, (nombre, ancho) in enumerate(cols, start=1):
     c = ws.cell(row=1, column=i, value=nombre)
@@ -127,9 +137,9 @@ ws.row_dimensions[1].height = 28
 for j, p in enumerate(datos):
     fila = j + 2
     valores = [
-        p["n"], p["banda"], p["foco"], p["contexto"], p["q"],
+        j + 1, p["banda"], p["foco"], p["q"],
         p["opts"][0], p["opts"][1], p["opts"][2], p["opts"][3],
-        f'{LETRAS[p["a"]]} ({p["opts"][p["a"]]})', p["origen"], None, None,
+        f'{LETRAS[p["a"]]} ({p["opts"][p["a"]]})', None, None,
     ]
     for i, v in enumerate(valores, start=1):
         c = ws.cell(row=fila, column=i, value=v)
@@ -140,23 +150,23 @@ for j, p in enumerate(datos):
             c.fill = relleno_banda
             c.alignment = Alignment(vertical="top", horizontal="center")
             c.font = Font(name=fuente, size=10, bold=True, color=BORDO)
-        if i == 5:
+        if i == 4:
             c.font = mono
-        if i == 10:
+        if i == 9:
             c.font = Font(name=fuente, size=10, bold=True)
-        if i in (12, 13):
+        if i in (10, 11):
             c.fill = relleno_input
     # Sin alto fijo: las preguntas son de dos líneas y algunas envuelven a tres,
     # así que conviene que Excel ajuste solo antes que recortar el texto.
 
 ws.freeze_panes = "A2"
-ws.auto_filter.ref = f"A1:M{len(datos) + 1}"
+ws.auto_filter.ref = f"A1:K{len(datos) + 1}"
 
 dv = DataValidation(type="list", formula1='"Sí,Cambiar,Sacar"', allow_blank=True, showDropDown=False)
 dv.prompt = "Sí / Cambiar / Sacar"
 dv.promptTitle = "¿Va esta pregunta?"
 ws.add_data_validation(dv)
-dv.add(f"L2:L{len(datos) + 1}")
+dv.add(f"J2:J{len(datos) + 1}")
 
 # --------------------------------------------------------------------- Resumen
 res = wb.create_sheet("Resumen")
@@ -182,7 +192,7 @@ for k, banda in enumerate(["A1", "A2", "B1", "B2", "C1"]):
     res.cell(row=r, column=2, value=f'=COUNTIF(Preguntas!$B$2:$B${ultima},$A{r})')
     for i, veredicto in enumerate(["Sí", "Cambiar", "Sacar"], start=3):
         res.cell(row=r, column=i,
-                 value=f'=COUNTIFS(Preguntas!$B$2:$B${ultima},$A{r},Preguntas!$L$2:$L${ultima},"{veredicto}")')
+                 value=f'=COUNTIFS(Preguntas!$B$2:$B${ultima},$A{r},Preguntas!$J$2:$J${ultima},"{veredicto}")')
     res.cell(row=r, column=6, value=f"=$B{r}-SUM($C{r}:$E{r})")
     for i in range(1, 7):
         cc = res.cell(row=r, column=i)
@@ -203,7 +213,7 @@ for i in range(2, 7):
 for i in range(1, 7):
     res.cell(row=r, column=i).border = borde
 
-res["A13"] = "Objetivo: 10 preguntas utilizables por banda. Con menos de 8 en alguna, conviene escribir reemplazos antes de publicar."
+res["A13"] = "Objetivo: al menos 8 preguntas utilizables por banda, para que el sorteo de 4 tenga de dónde elegir."
 res["A13"].font = chico
 
 SALIDA = "contenido/test-de-nivel-preguntas-para-revisar.xlsx"

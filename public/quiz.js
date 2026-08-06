@@ -4,33 +4,76 @@
    Las preguntas, el puntaje y los textos por nivel son los del diseño original.
    ========================================================================== */
 
-/* Estas 20 son fijas: todos reciben las mismas y en el mismo orden. Hay un
-   banco de 50 esperando revisión en contenido/preguntas-propuestas.json, para
-   sortear 4 por banda y que el test no se pueda memorizar. */
-const PREGUNTAS = [
-  { banda: "A1", q: "— Hi! ___ your name?", opts: ["What's", "How's", "Which is", "Who's"], a: 0 },
-  { banda: "A1", q: "She ___ from Argentina, but she lives in Spain.", opts: ["are", "is", "be", "am"], a: 1 },
-  { banda: "A1", q: "I usually ___ coffee in the morning.", opts: ["drinking", "drinks", "drink", "am drink"], a: 2 },
-  { banda: "A1", q: "There ___ any milk in the fridge.", opts: ["isn't", "aren't", "don't", "not is"], a: 0 },
-  { banda: "A2", q: "Yesterday we ___ to a client meeting in Madrid.", opts: ["go", "gone", "went", "was going"], a: 2 },
-  { banda: "A2", q: "I'm sorry, I can't talk now — I ___ a report.", opts: ["write", "am writing", "writes", "have write"], a: 1 },
-  { banda: "A2", q: "This is ___ presentation I've ever given.", opts: ["the better", "the best", "best", "more good"], a: 1 },
-  { banda: "A2", q: "If it rains tomorrow, we ___ the class online.", opts: ["will do", "would do", "did", "do"], a: 0 },
-  { banda: "B1", q: "I ___ in this company since 2019.", opts: ["work", "am working", "have worked", "worked"], a: 2 },
-  { banda: "B1", q: "She asked me ___ the file before Friday.", opts: ["to send", "sending", "that I send", "send"], a: 0 },
-  { banda: "B1", q: "The meeting was cancelled, ___ nobody told me.", opts: ["although", "despite", "however", "in spite"], a: 2 },
-  { banda: "B1", q: "He said he ___ finish the proposal that evening.", opts: ["will", "would", "won't", "is going"], a: 1 },
-  { banda: "B2", q: "By the time the call started, I ___ the slides three times.", opts: ["reviewed", "was reviewing", "have reviewed", "had reviewed"], a: 3 },
-  { banda: "B2", q: "The budget cuts ___ before anyone had a chance to object.", opts: ["approved", "were approved", "have approving", "was approve"], a: 1 },
-  { banda: "B2", q: "I'd rather you ___ me before making that decision.", opts: ["called", "call", "would call", "have called"], a: 0 },
-  { banda: "B2", q: "We need to ___ up with a solution by Monday.", opts: ["put", "come", "take", "look"], a: 1 },
-  // «than», no «when»: la correlación es «no sooner… than». Con «when» las
-  // correctas eran «Hardly» y «Barely», y la marcada como buena era la mala.
-  { banda: "C1", q: "___ had I sent the email than the client replied.", opts: ["Hardly", "No sooner", "Rarely", "Barely"], a: 1 },
-  { banda: "C1", q: "The proposal was turned down, which ___ the whole team.", opts: ["set back", "set off", "set out", "set up"], a: 0 },
-  { banda: "C1", q: "Were it not for her feedback, the launch ___ a disaster.", opts: ["would be", "will have been", "would have been", "had been"], a: 2 },
-  { banda: "C1", q: "His argument, ___ compelling, overlooked the cost side entirely.", opts: ["as", "while", "however", "albeit"], a: 3 },
+/* Banco de preguntas. Cada persona recibe POR_BANDA de cada nivel, sorteadas
+   del banco: así dos personas no hacen el mismo test y no se puede memorizar
+   repitiéndolo. Cada ítem es un intercambio corto —el hueco va en una réplica,
+   no en una frase suelta—, que es como se trabaja en clase.
+
+   Revisado por Victoria Rossa el 6/8/2026. Para volver a someterlo a revisión:
+   python3 contenido/_planilla.py arma la planilla leyendo este mismo banco. */
+const BANCO = [
+  // ---- A1 ----
+  { banda: "A1", foco: "Preguntas con to be", q: "— Hi, I'm Marta. ___ your name?\n— Nice to meet you. I'm Tom.", opts: ["What's","How's","Which is","Who's"], a: 0 },
+  { banda: "A1", foco: "To be en preguntas", q: "— Where ___ you from?\n— I'm from Córdoba, in Argentina.", opts: ["is","are","am","be"], a: 1 },
+  { banda: "A1", foco: "Presente simple, auxiliar", q: "— ___ you drink coffee in the morning?\n— Yes, every single day.", opts: ["Are","Does","Do","Is"], a: 2 },
+  { banda: "A1", foco: "There is / any", q: "— Is there any milk?\n— No, there ___ any. I'll buy some.", opts: ["aren't","don't","not is","isn't"], a: 3 },
+  { banda: "A1", foco: "Can para pedidos", q: "— ___ you send me the address, please?\n— Sure, I'll text it to you now.", opts: ["Can","Do","Are","Have"], a: 0 },
+  { banda: "A1", foco: "Preposiciones de tiempo", q: "— When is the meeting?\n— ___ Monday, at nine.", opts: ["In","On","At","To"], a: 1 },
+  { banda: "A1", foco: "Posesivos", q: "— Is this ___ laptop?\n— No, mine is the black one.", opts: ["you","yours","your","you're"], a: 2 },
+  { banda: "A1", foco: "There are, plural", q: "— How many people are in your team?\n— There ___ six of us.", opts: ["is","have","be","are"], a: 3 },
+  { banda: "A1", foco: "Presente simple, primera persona", q: "— Do you like working from home?\n— Yes, I ___ it a lot.", opts: ["like","likes","am liking","am like"], a: 0 },
+  { banda: "A1", foco: "Preposiciones de hora", q: "— What time do you start?\n— I start work ___ 8:30.", opts: ["in","at","from","on"], a: 1 },
+
+  // ---- A2 ----
+  { banda: "A2", foco: "Pasado simple irregular", q: "— How was Madrid?\n— Good. We ___ to a client meeting on Tuesday.", opts: ["go","gone","went","was going"], a: 2 },
+  { banda: "A2", foco: "Presente continuo", q: "— Can you talk now?\n— Sorry, I ___ a report. Can I call you back?", opts: ["write","have write","writes","am writing"], a: 3 },
+  { banda: "A2", foco: "Superlativo", q: "— How did it go?\n— It was ___ presentation I've ever given.", opts: ["the best","best","the better","more good"], a: 0 },
+  { banda: "A2", foco: "Primer condicional", q: "— And if the weather is bad?\n— If it rains, we ___ the class online.", opts: ["would do","will do","did","do"], a: 1 },
+  { banda: "A2", foco: "Going to, planes", q: "— What are your plans for Friday?\n— I ___ visit the new office.", opts: ["will going to","go to","am going to","am going"], a: 2 },
+  { banda: "A2", foco: "Have to, obligación", q: "— Do I need to be there at eight?\n— Yes, everyone ___ sign in before the training starts.", opts: ["have to","must to","should to","has to"], a: 3 },
+  { banda: "A2", foco: "Comparativo", q: "— Is the new system better?\n— It's ___ than the old one, yes.", opts: ["faster","more fast","fastest","the fastest"], a: 0 },
+  { banda: "A2", foco: "Some en ofrecimientos", q: "— Would you like ___ help with the slides?\n— That would be great, thanks.", opts: ["any","some","a","much"], a: 1 },
+  { banda: "A2", foco: "Posición del adverbio de frecuencia", q: "— Do you travel a lot?\n— I ___ to Chile, about twice a year.", opts: ["go sometimes","go always","sometimes go","am sometimes going"], a: 2 },
+  { banda: "A2", foco: "Pasado continuo vs. simple", q: "— Why didn't you answer?\n— Sorry, I ___ when you called.", opts: ["drove","have driven","am driving","was driving"], a: 3 },
+
+  // ---- B1 ----
+  { banda: "B1", foco: "Present perfect con since", q: "— How long have you been with them?\n— I ___ in this company since 2019.", opts: ["have worked","am working","work","worked"], a: 0 },
+  { banda: "B1", foco: "Estilo indirecto, pedido", q: "— What did Laura want?\n— She asked me ___ the file before Friday.", opts: ["sending","to send","that I send","send"], a: 1 },
+  { banda: "B1", foco: "Conectores de contraste", q: "— The meeting was cancelled; ___, nobody told me.\n— I'm sorry about that.", opts: ["although","despite","however","in spite"], a: 2 },
+  { banda: "B1", foco: "Estilo indirecto, backshift", q: "— What did he say exactly?\n— He said he ___ finish the proposal that evening.", opts: ["will","is going","won't","would"], a: 3 },
+  { banda: "B1", foco: "Used to", q: "— Have you always worked in tech?\n— No, I ___ work in a bank.", opts: ["used to","use to","was used to","am used to"], a: 0 },
+  { banda: "B1", foco: "Gerundio tras preposición", q: "— How did you improve so fast?\n— By ___ to podcasts on the way to work.", opts: ["listen","listening","listened","to listen"], a: 1 },
+  { banda: "B1", foco: "Oraciones de relativo", q: "— Which one is Diego?\n— He's the colleague ___ organised the training.", opts: ["which","what","who","whose"], a: 2 },
+  { banda: "B1", foco: "Modales de consejo", q: "— I'm nervous about the interview.\n— You ___ practise out loud. It really helps.", opts: ["would","must to","had","should"], a: 3 },
+  { banda: "B1", foco: "Voz pasiva, presente", q: "— Who writes the reports?\n— They ___ by the finance team.", opts: ["are written","are writing","write","have written"], a: 0 },
+  { banda: "B1", foco: "Enough", q: "— Can we fit another item into the agenda?\n— No, there isn't ___ time.", opts: ["too much","enough","too","many"], a: 1 },
+
+  // ---- B2 ----
+  { banda: "B2", foco: "Pasado perfecto", q: "— Were you ready for the call?\n— More than ready. By the time it started, I ___ the slides three times.", opts: ["reviewed","was reviewing","had reviewed","have reviewed"], a: 2 },
+  { banda: "B2", foco: "Voz pasiva, pasado", q: "— Did anyone object to the cuts?\n— Nobody got the chance. The budget cuts ___ before we could speak.", opts: ["approved","was approve","have approving","were approved"], a: 3 },
+  { banda: "B2", foco: "I'd rather + pasado", q: "— I signed it yesterday.\n— I'd rather you ___ me before making that decision.", opts: ["had called","called","would call","have called"], a: 0 },
+  { banda: "B2", foco: "Phrasal verb: come up with", q: "— What's the deadline?\n— We need to ___ up with a solution by Monday.", opts: ["put","come","take","look"], a: 1 },
+  { banda: "B2", foco: "Segundo condicional", q: "— Are you going to apply?\n— If I ___ more experience, I would.", opts: ["have","would have","had","am having"], a: 2 },
+  { banda: "B2", foco: "Tercer condicional", q: "— Why didn't you tell me?\n— If I ___ known, I would have called you straight away.", opts: ["have","did","would have","had"], a: 3 },
+  { banda: "B2", foco: "Verbo de reporte + gerundio", q: "— Did they admit the mistake?\n— Yes, they admitted ___ the wrong file.", opts: ["sending","to send","sent","send"], a: 0 },
+  { banda: "B2", foco: "So / such", q: "— How was the feedback?\n— It was ___ detailed that we had to rewrite the whole section.", opts: ["such","so","very","too"], a: 1 },
+  { banda: "B2", foco: "Cláusula de participio", q: "— How did you find out?\n— While ___ the report, I noticed the figures didn't add up.", opts: ["to read","read","reading","being read"], a: 2 },
+  { banda: "B2", foco: "Futuro perfecto", q: "— Will it be ready for the launch?\n— By then we ___ the testing.", opts: ["will finish","would finish","finish","will have finished"], a: 3 },
+
+  // ---- C1 ----
+  { banda: "C1", foco: "Inversión: no sooner… than", q: "— Did they take long to reply?\n— ___ had I sent the email than the client replied.", opts: ["No sooner","Hardly","Rarely","Barely"], a: 0 },
+  { banda: "C1", foco: "Phrasal verb: set back", q: "— How did the team take it?\n— The proposal was turned down, which ___ the project by months.", opts: ["set off","set back","set out","set up"], a: 1 },
+  { banda: "C1", foco: "Condicional invertido", q: "— Her feedback made the difference, then.\n— Were it not for her feedback, the launch ___ a disaster.", opts: ["would be","will have been","would have been","had been"], a: 2 },
+  { banda: "C1", foco: "Concesivo: albeit", q: "— What did you make of his argument?\n— His argument, ___ compelling, overlooked the cost side entirely.", opts: ["as","while","however","albeit"], a: 3 },
+  { banda: "C1", foco: "Oración hendida (cleft)", q: "— So the price wasn't the issue?\n— No. ___ put them off was the timeline, not the price.", opts: ["What","That","Which","It"], a: 0 },
+  { banda: "C1", foco: "Subjuntivo tras insist", q: "— What did legal say?\n— They insisted that the clause ___ removed before signing.", opts: ["is","be","was being","would be"], a: 1 },
+  { banda: "C1", foco: "Colocación: bear in mind", q: "— Anything else before I send it?\n— Just ___ in mind that they read everything literally.", opts: ["hold","carry","bear","take"], a: 2 },
+  { banda: "C1", foco: "Phrasal verb: get round to", q: "— Did you look at the contract?\n— Not yet, I haven't ___ round to it.", opts: ["gone","come","turned","got"], a: 3 },
+  { banda: "C1", foco: "Might as well", q: "— Should I push back on the deadline?\n— You ___ as well ask. The worst they can say is no.", opts: ["might","should","would","could"], a: 0 },
+  { banda: "C1", foco: "Conector formal: notwithstanding", q: "— They still went ahead?\n— ___ the delays, the project went live on time.", opts: ["Although","Notwithstanding","Even","However"], a: 1 },
 ];
+
+const POR_BANDA = 4;
 
 const NIVELES = {
   A1: {
@@ -95,10 +138,39 @@ const WA_TEST = "5493515645110";
 const CLAVE_TEST = "ice-test";
 const VENCE_MS = 7 * 24 * 60 * 60 * 1000;
 
-const estado = { pantalla: "intro", i: 0, respuestas: [], resultado: null };
+const estado = { pantalla: "intro", i: 0, respuestas: [], resultado: null, ids: [] };
+
+/* Las preguntas que le tocaron a esta persona, en orden de banda. Se sortean al
+   cargar la página y se rearman al empezar de nuevo. `estado.ids` guarda de qué
+   posición del banco salió cada una: sin eso, al retomar un test a medias las
+   respuestas quedarían apuntando a otras preguntas. */
+let PREGUNTAS = [];
 
 const $ = (id) => document.getElementById(id);
 const enIngles = () => document.documentElement.lang === "en";
+
+/* Fisher-Yates sobre los índices de cada banda, y nos quedamos con POR_BANDA.
+   Se sortea por banda y no sobre todo el banco para que el test siga teniendo
+   la misma forma: cuatro preguntas de cada nivel, de la más fácil a la más
+   difícil. De eso depende la regla de nivel. */
+function sortear() {
+  const elegidas = [];
+  for (const banda of ORDEN) {
+    const indices = [];
+    BANCO.forEach((q, i) => q.banda === banda && indices.push(i));
+    for (let k = indices.length - 1; k > 0; k--) {
+      const j = Math.floor(Math.random() * (k + 1));
+      [indices[k], indices[j]] = [indices[j], indices[k]];
+    }
+    elegidas.push(...indices.slice(0, POR_BANDA));
+  }
+  return elegidas;
+}
+
+function usar(ids) {
+  estado.ids = ids;
+  PREGUNTAS = ids.map((i) => BANCO[i]);
+}
 
 /* `registrar()` vive en app.js, que carga antes que este script en todas las
    páginas. Acá sólo se usa para los dos eventos del test. */
@@ -145,7 +217,13 @@ function guardar(terminado = false) {
   try {
     localStorage.setItem(
       CLAVE_TEST,
-      JSON.stringify({ i: estado.i, respuestas: estado.respuestas, terminado, ts: Date.now() })
+      JSON.stringify({
+        ids: estado.ids,
+        i: estado.i,
+        respuestas: estado.respuestas,
+        terminado,
+        ts: Date.now(),
+      })
     );
   } catch {
     /* modo privado o sin espacio: el test funciona igual, sólo no se guarda */
@@ -160,8 +238,9 @@ function olvidar() {
   }
 }
 
-/* Lo que sale de localStorage lo pudo editar cualquiera, y `respuestas` indexa
-   las opciones de cada pregunta: se revisa entero antes de usarlo. */
+/* Lo que sale de localStorage lo pudo editar cualquiera, y tanto `ids` como
+   `respuestas` se usan para indexar: se revisa entero antes de usarlo. Un
+   guardado de antes del sorteo tampoco tiene `ids`, y cae por acá. */
 function leerGuardado() {
   let d;
   try {
@@ -171,13 +250,21 @@ function leerGuardado() {
   }
   if (!d || !Array.isArray(d.respuestas) || !Number.isInteger(d.i)) return null;
   if (!Number.isFinite(d.ts) || Date.now() - d.ts > VENCE_MS) return null;
-  if (d.i < 0 || d.i > PREGUNTAS.length) return null;
 
-  const respuestas = PREGUNTAS.map((q, i) => {
+  if (!Array.isArray(d.ids) || d.ids.length !== ORDEN.length * POR_BANDA) return null;
+  if (!d.ids.every((i) => Number.isInteger(i) && i >= 0 && i < BANCO.length)) return null;
+  if (new Set(d.ids).size !== d.ids.length) return null;
+  // La forma tiene que seguir siendo POR_BANDA de cada nivel y en ese orden:
+  // la regla de nivel cuenta con eso.
+  const forma = ORDEN.flatMap((b) => Array(POR_BANDA).fill(b));
+  if (!d.ids.every((idx, k) => BANCO[idx].banda === forma[k])) return null;
+  if (d.i < 0 || d.i > d.ids.length) return null;
+
+  const respuestas = d.ids.map((idx, i) => {
     const r = d.respuestas[i];
-    return Number.isInteger(r) && r >= -1 && r < q.opts.length ? r : undefined;
+    return Number.isInteger(r) && r >= -1 && r < BANCO[idx].opts.length ? r : undefined;
   });
-  return { i: d.i, respuestas, terminado: d.terminado === true };
+  return { ids: d.ids, i: d.i, respuestas, terminado: d.terminado === true };
 }
 
 /* replaceState y no location.hash: así no salta el scroll ni se suma una
@@ -354,7 +441,10 @@ function responder(idx) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+/* Empezar de cero incluye sortear preguntas nuevas: quien rehace el test no
+   recibe las mismas, que es el punto de tener banco. */
 function desdeCero() {
+  usar(sortear());
   estado.i = 0;
   estado.respuestas = [];
   estado.resultado = null;
@@ -366,6 +456,7 @@ function desdeCero() {
 document.addEventListener("DOMContentLoaded", () => {
   if (!$("pantalla-intro")) return;
 
+  usar(sortear());
   const guardado = leerGuardado();
   const compartido = leerHash();
 
@@ -421,19 +512,25 @@ document.addEventListener("DOMContentLoaded", () => {
   if (compartido) {
     estado.resultado = compartido;
     // Si el guardado coincide, es quien hizo el test: le mostramos su repaso.
+    // Hay que calcular sobre las preguntas que le tocaron a él, no sobre las
+    // que acabamos de sortear, o el puntaje no daría nunca.
     if (guardado?.terminado) {
+      usar(guardado.ids);
       const propio = calcular(guardado.respuestas);
       if (propio.nivel === compartido.nivel && propio.puntaje === compartido.puntaje) {
         estado.respuestas = guardado.respuestas;
         estado.i = PREGUNTAS.length;
+      } else {
+        usar(sortear()); // el link es de otra persona: que tenga un test nuevo
       }
     }
     mostrarPantalla("resultado");
     pintarResultado();
-  } else if (guardado && !guardado.terminado && guardado.i > 0 && guardado.i < PREGUNTAS.length) {
+  } else if (guardado && !guardado.terminado && guardado.i > 0 && guardado.i < guardado.ids.length) {
     $("btn-continuar").hidden = false;
-    $("continuar-detalle").textContent = `${guardado.i}/${PREGUNTAS.length}`;
+    $("continuar-detalle").textContent = `${guardado.i}/${guardado.ids.length}`;
     $("btn-continuar").addEventListener("click", () => {
+      usar(guardado.ids);
       estado.i = guardado.i;
       estado.respuestas = guardado.respuestas;
       mostrarPantalla("quiz");

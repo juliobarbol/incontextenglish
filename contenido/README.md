@@ -36,10 +36,27 @@ puede perder; uno en `contenido/` está a salvo y sigue sin publicarse.**
 
 ## Qué hay ahora
 
-| Archivo | Qué es | Espera |
-|---|---|---|
-| `preguntas-propuestas.json` | Banco de 50 preguntas para el test de nivel, 10 por banda, en contexto conversacional. Reemplazaría a las 20 fijas de `quiz.js`, sorteando 4 por banda. | Revisión de Victoria |
-| `_planilla.py` | Arma la planilla de revisión (`.xlsx`) a partir del JSON. Se corre con `python3 contenido/_planilla.py`. | — |
+| Archivo | Qué es |
+|---|---|
+| `_planilla.py` | Arma la planilla de revisión del banco de preguntas del test. Se corre con `python3 contenido/_planilla.py` (necesita `openpyxl`). |
 
 El `.xlsx` que genera no se versiona (está en `.gitignore`): se rearma cuando
-haga falta, y la copia que circula es la que se le mandó a Victoria.
+haga falta.
+
+## Revisar el banco de preguntas del test
+
+El banco vive en **`public/quiz.js`** (`const BANCO`), que es lo que se publica,
+y `_planilla.py` **lo lee de ahí**. No hay copia en `contenido/` a propósito: dos
+copias se desincronizan sin que nadie lo note, y la que quedaría vieja es
+justamente la que se manda a revisar.
+
+El circuito es:
+
+1. `python3 contenido/_planilla.py` → genera el `.xlsx` con lo que está en vivo.
+2. Se lo manda a Victoria. Ella completa dos columnas: **¿Va?** (Sí / Cambiar /
+   Sacar) y **Comentario**.
+3. Vuelve el archivo, se aplican los cambios sobre `BANCO` en `public/quiz.js`,
+   `npm run verificar`, y a publicar.
+
+Revisado por Victoria el 6/8/2026: 46 preguntas aprobadas sin cambios y 4
+corregidas. Ninguna descartada.

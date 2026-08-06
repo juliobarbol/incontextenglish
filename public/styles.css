@@ -729,7 +729,11 @@ h2.display { font-size: clamp(30px, 4.6vw, 44px); line-height: 1.12; }
   line-height: 1.25;
   letter-spacing: -0.01em;
   text-wrap: pretty;
+  /* Las preguntas son intercambios de dos líneas y traen el salto adentro. */
+  white-space: pre-line;
 }
+/* En el repaso van más chicas, pero siguen siendo dos líneas. */
+.repaso .pregunta { white-space: pre-line; }
 .opciones { display: grid; gap: 12px; margin-top: 30px; }
 .opcion {
   display: flex;

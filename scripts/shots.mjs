@@ -302,6 +302,37 @@ for (const vp of ANCHOS) {
   await ctx.close();
 }
 
+/* El sorteo: 4 de cada banda, sin repetir, y distinto en cada visita. Si esto
+   se rompe, el test sigue andando —por eso hay que comprobarlo— pero deja de
+   tener sentido tener banco. */
+{
+  const { ctx, page } = await nuevaPagina(ANCHOS[0], "sorteo de preguntas");
+  await page.goto(`${base}/test-de-nivel/`, { waitUntil: "networkidle" });
+
+  const forma = await page.evaluate(() => ({
+    banco: BANCO.length,
+    tomadas: PREGUNTAS.length,
+    bandas: PREGUNTAS.map((q) => q.banda),
+    repetidas: PREGUNTAS.length - new Set(estado.ids).size,
+    ids: estado.ids.join(","),
+  }));
+
+  const esperado = ["A1", "A2", "B1", "B2", "C1"].flatMap((b) => Array(4).fill(b));
+  if (forma.bandas.join(",") !== esperado.join(",")) {
+    problemas.push(`el sorteo no dio 4 por banda en orden: ${forma.bandas.join(",")}`);
+  }
+  if (forma.repetidas) problemas.push(`el sorteo repitió ${forma.repetidas} pregunta(s)`);
+
+  /* Dos visitas seguidas no deberían recibir el mismo test. Con 10 por banda,
+     que coincidan las 20 por azar es 1 en 10^5 largos: si pasa, no es suerte. */
+  await page.reload({ waitUntil: "networkidle" });
+  const otros = await page.evaluate(() => estado.ids.join(","));
+  if (otros === forma.ids) problemas.push("dos visitas seguidas recibieron exactamente las mismas preguntas");
+  else console.log(`  · el sorteo da 4 por banda de un banco de ${forma.banco} y cambia en cada visita`);
+
+  await ctx.close();
+}
+
 /* El progreso a medio camino: son 20 preguntas y casi siempre en el teléfono */
 {
   const { ctx, page } = await nuevaPagina(ANCHOS[1], "test a medias");
@@ -309,16 +340,29 @@ for (const vp of ANCHOS) {
   await page.click("#btn-empezar");
   for (let i = 0; i < 5; i++) await page.click(".opcion >> nth=0");
 
+  /* Con banco y sorteo, retomar tiene que devolver LAS MISMAS preguntas: si
+     vuelven otras, las respuestas ya dadas quedan apuntando a preguntas que
+     esa persona nunca vio, y el nivel sale de cualquier lado. */
+  const mias = await page.evaluate(() => estado.ids.join(","));
+  const enPantalla = (await page.textContent("#quiz-pregunta"))?.trim();
+
   await page.reload({ waitUntil: "networkidle" });
   if (!(await page.isVisible("#btn-continuar"))) {
     problemas.push("contesté 5 preguntas, recargué y no se puede retomar: se perdió el progreso");
   } else {
     await page.click("#btn-continuar");
     const donde = (await page.textContent("#quiz-progreso"))?.trim();
+    const ahora = await page.evaluate(() => estado.ids.join(","));
+    const pregunta = (await page.textContent("#quiz-pregunta"))?.trim();
+
     if (!/\b6\s*\/\s*20\b/.test(donde ?? "")) {
       problemas.push(`al retomar el test no volvió a la pregunta 6 (dice "${donde}")`);
+    } else if (ahora !== mias) {
+      problemas.push("al retomar cambiaron las preguntas: las respuestas ya dadas quedan sobre otras");
+    } else if (pregunta !== enPantalla) {
+      problemas.push(`al retomar cambió la pregunta en pantalla: era «${enPantalla}» y ahora dice «${pregunta}»`);
     } else {
-      console.log("  · el test se retoma donde quedó");
+      console.log("  · el test se retoma donde quedó, con las mismas preguntas");
     }
   }
 
