@@ -189,7 +189,7 @@ const capturar = async (page, nombre) => {
   console.log(`  ✓ .shots/${nombre}.png`);
 };
 
-/* Home y test, en los dos anchos */
+/* Home, test y páginas de contenido, en los dos anchos */
 for (const vp of ANCHOS) {
   const { ctx, page } = await nuevaPagina(vp, vp.nombre);
 
@@ -198,6 +198,13 @@ for (const vp of ANCHOS) {
 
   await page.goto(`${base}/test-de-nivel/`, { waitUntil: "networkidle" });
   await capturar(page, `test-intro-${vp.nombre}`);
+
+  await page.goto(`${base}/examenes/`, { waitUntil: "networkidle" });
+  await capturar(page, `examenes-${vp.nombre}`);
+
+  // Una de las tres páginas de examen alcanza: las tres comparten plantilla.
+  await page.goto(`${base}/examenes/ielts/`, { waitUntil: "networkidle" });
+  await capturar(page, `examen-ielts-${vp.nombre}`);
 
   await ctx.close();
 }

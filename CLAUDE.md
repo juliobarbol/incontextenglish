@@ -132,6 +132,53 @@ misma página (si no, los clics de los dos elementos se suman sin que se note).
 Para consultar los datos no hace falta panel: el conector de Cloudflare permite
 `d1_database_query` sobre la base `incontextenglish`.
 
+### 5. Las páginas de contenido son todas la misma plantilla
+
+`/examenes/` y sus tres hijas (`ielts/`, `toefl/`, `cambridge/`) existen por una
+razón de buscador: Google posiciona páginas, no sitios, y una página compite por
+una intención de búsqueda. Con la home y el test solos había dos puertas de
+entrada al sitio; «preparación IELTS online» necesita su propia URL.
+
+Comparten cabecera, pie y estructura: portada bordo con migas de pan, ficha de
+datos, texto, preguntas frecuentes y cierre. **Si tocás una, mirá si el cambio
+va en las cuatro.** El CSS que agregan está al final de `styles.css`, bajo
+«Páginas de contenido»: `.migas`, `.portada`, `.prosa`, `.ficha`, `.examenes` y
+`.faq`.
+
+Dos cosas que ya se rompieron una vez y están resueltas ahí:
+
+- `.prosa` sobre el mismo elemento que `.wrap` pisaba el `max-width` del wrap y
+  centraba la columna, desalineándola del resto del sitio. Lo arregla la regla
+  `.wrap.prosa`.
+- Los márgenes de `.prosa` van elemento por elemento, no con `> * + *`: las
+  reglas por etiqueta son más específicas y dejaban los párrafos pegados.
+
+`npm run shots` captura `/examenes/` y `/examenes/ielts/` en los dos anchos. Las
+otras dos no, porque comparten plantilla con IELTS.
+
+Del contenido, la parte de cada examen (formato, secciones, puntajes) es
+información pública y verificable; la parte de cómo se prepara **no dice nada
+que el sitio no afirmara ya**: 1:1, grupos de hasta seis, material del área del
+alumno, horarios entre husos. Si vas a agregar algo sobre lo que se hace en
+clase —simulacros, duración, frecuencia, materiales— eso hay que preguntárselo
+a Victoria antes, no deducirlo.
+
+### 6. Convenciones de buscador
+
+- **`sitemap.xml` va con `lastmod` y sin `changefreq` ni `priority`.** Google
+  ignora los dos últimos hace años; el primero sí lo usa. Cuando cambia el
+  contenido de una página de verdad, actualizale la fecha.
+- **El JSON-LD de la home es un `@graph`**, no un objeto suelto: la
+  organización, Victoria y los dos cursos se enlazan por `@id`. Las páginas de
+  examen llevan su `BreadcrumbList` y su `Course`.
+- **Toda página nueva necesita `canonical`, `og:url` y su línea en el
+  sitemap.** `npm run check` falla si el canonical no coincide con la ruta real
+  y avisa si falta en el sitemap.
+- **El bilingüe no lo ve Google.** El inglés vive en atributos y sólo aparece al
+  tocar el botón, así que se indexa únicamente el castellano. Es el precio de no
+  tener `/en/`, y está asumido: si alguna vez hay que posicionar en inglés, eso
+  pide URLs propias y `hreflang`, no un botón.
+
 ## Decisiones deliberadas — no son bugs
 
 - **El formulario no manda mails.** Arma el texto y abre `wa.me` con el mensaje
@@ -245,6 +292,23 @@ producción, útil para distinguir «no se desplegó» de «es caché».
 
 Fotos profesionales (las actuales son selfies) y una página de precios — hoy
 "Todos los niveles y precios" apunta a WhatsApp.
+
+**Lo que está frenado esperando datos de Victoria** (7/8/2026). Nada de esto se
+puede inventar: una respuesta aproximada en el sitio es peor que la ausencia de
+la pregunta, porque la lee alguien que después llega a la clase con otra
+expectativa.
+
+| Pendiente | Para qué |
+|---|---|
+| Precios por modalidad y frecuencia | La página de precios, que es la búsqueda con más intención de compra que existe. Hoy sólo hay una FAQ que remite a WhatsApp. |
+| Cómo es la clase de prueba: duración, si es sin cargo | El botón «Clase de prueba» está en toda cabecera y el sitio no explica qué es. |
+| Duración y frecuencia de las clases | FAQ y páginas de curso. |
+| Plataforma de videollamada | FAQ: se pregunta siempre. |
+| Política de cancelación o reprogramación | FAQ. |
+| Si trabaja con simulacros de examen y con qué material | Las páginas de examen hoy no lo afirman, justamente porque no consta. |
+| Sus títulos y certificaciones, con nombre exacto | El `Person` del JSON-LD y la sección «Sobre mí». Google le da peso a quién firma el contenido. |
+| Si se puede nombrar la ciudad (Córdoba) | Búsquedas locales y Perfil de Empresa. El sitio hoy sólo dice «Argentina». |
+| Permiso de más alumnos para testimonios | Más testimonios en la home. |
 
 Los testimonios ya tienen sección (`#testimonios` en la home, 6/8/2026). Salieron
 de capturas de WhatsApp que pasó Victoria, y por eso hay dos reglas:

@@ -15,6 +15,7 @@
 <meta property="og:title" content="Hablá inglés sin traducir en tu cabeza">
 <meta property="og:description" content="Clases online 1:1 y en grupos reducidos para profesionales y preparación de exámenes internacionales. Con Victoria Rossa.">
 <meta property="og:image" content="https://incontextenglish.com.ar/assets/og.jpg">
+<meta property="og:image:alt" content="In Context English — clases de inglés online con Victoria Rossa">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -28,27 +29,109 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 
+<!-- Un @graph en vez de un objeto suelto: así la organización, la profesora y
+     los cursos quedan enlazados por @id y no como tres fichas sin relación. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "EducationalOrganization",
-  "name": "In Context English",
-  "url": "https://incontextenglish.com.ar/",
-  "logo": "https://incontextenglish.com.ar/assets/logo.png",
-  "description": "Clases de inglés online 1:1 y en grupos reducidos para profesionales y preparación de exámenes internacionales.",
-  "areaServed": "Worldwide",
-  "sameAs": ["https://www.instagram.com/incontextenglish.com.ar"],
-  "founder": {
-    "@type": "Person",
-    "name": "Victoria Rossa",
-    "jobTitle": "Profesora de inglés"
-  },
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "contactType": "customer service",
-    "telephone": "+54-9-351-564-5110",
-    "availableLanguage": ["Spanish", "English"]
-  }
+  "@graph": [
+    {
+      "@type": "EducationalOrganization",
+      "@id": "https://incontextenglish.com.ar/#organizacion",
+      "name": "In Context English",
+      "url": "https://incontextenglish.com.ar/",
+      "logo": "https://incontextenglish.com.ar/assets/logo.png",
+      "image": "https://incontextenglish.com.ar/assets/og.jpg",
+      "description": "Clases de inglés online 1:1 y en grupos reducidos para profesionales y preparación de exámenes internacionales.",
+      "areaServed": "Worldwide",
+      "knowsLanguage": ["es", "en"],
+      "sameAs": ["https://www.instagram.com/incontextenglish.com.ar"],
+      "founder": { "@id": "https://incontextenglish.com.ar/#victoria" },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "telephone": "+54-9-351-564-5110",
+        "availableLanguage": ["Spanish", "English"]
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://incontextenglish.com.ar/#victoria",
+      "name": "Victoria Rossa",
+      "jobTitle": "Profesora de inglés",
+      "description": "Profesora de inglés, fundadora de In Context English. Enseña a partir del contexto: el vocabulario sale de las situaciones reales de cada alumno, no de listas para memorizar.",
+      "image": "https://incontextenglish.com.ar/assets/vicky-about.webp",
+      "knowsLanguage": ["es", "en"],
+      "worksFor": { "@id": "https://incontextenglish.com.ar/#organizacion" },
+      "url": "https://incontextenglish.com.ar/#sobre-mi"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://incontextenglish.com.ar/#sitio",
+      "url": "https://incontextenglish.com.ar/",
+      "name": "In Context English",
+      "inLanguage": "es-AR",
+      "publisher": { "@id": "https://incontextenglish.com.ar/#organizacion" }
+    },
+    {
+      "@type": "Course",
+      "name": "Clases de inglés online 1:1",
+      "description": "Clases individuales totalmente personalizadas: se trabaja el vocabulario específico del área laboral del alumno y lo que necesite resolver en el trabajo, o la estrategia para su examen internacional.",
+      "url": "https://incontextenglish.com.ar/#cursos",
+      "inLanguage": ["es", "en"],
+      "provider": { "@id": "https://incontextenglish.com.ar/#organizacion" },
+      "hasCourseInstance": {
+        "@type": "CourseInstance",
+        "courseMode": "online",
+        "instructor": { "@id": "https://incontextenglish.com.ar/#victoria" }
+      }
+    },
+    {
+      "@type": "Course",
+      "name": "Clases de inglés online en grupos reducidos",
+      "description": "Grupos de no más de seis alumnos, siempre con personas del mismo nivel, con nivelación previa al ingreso. Debates, role-plays y situaciones reales para ganar fluidez.",
+      "url": "https://incontextenglish.com.ar/#cursos",
+      "inLanguage": ["es", "en"],
+      "provider": { "@id": "https://incontextenglish.com.ar/#organizacion" },
+      "hasCourseInstance": {
+        "@type": "CourseInstance",
+        "courseMode": "online",
+        "maximumAttendeeCapacity": 6,
+        "instructor": { "@id": "https://incontextenglish.com.ar/#victoria" }
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://incontextenglish.com.ar/#preguntas",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Las clases son 100% online?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Sí. Todas las clases son por videollamada, desde Argentina a donde estés, y los horarios se acomodan entre husos horarios." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo sé qué nivel de inglés tengo?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Con el test de nivel gratis de este sitio: veinte preguntas en contexto, unos diez minutos, y te da tu nivel según el Marco Común Europeo de A1 a C1 con una recomendación de curso." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cuántos alumnos hay en una clase grupal?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Máximo seis, siempre con personas del mismo nivel: hay una nivelación previa al ingreso, así nadie termina en un grupo que le va muy adelante o muy atrás." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Preparás exámenes internacionales?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Sí: IELTS, TOEFL y Cambridge. Cada uno tiene una técnica propia además del inglés, y hay una página por examen donde está explicado cómo se prepara." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿En qué se diferencian estas clases?",
+          "acceptedAnswer": { "@type": "Answer", "text": "El material sale de la vida real del alumno: sus reuniones, sus mails, su industria, su examen. Y se habla desde el primer minuto: la gramática aparece cuando se la necesita, nunca como una lista para memorizar." }
+        }
+      ]
+    }
+  ]
 }
 </script>
 </head>
@@ -65,6 +148,7 @@
     <nav class="nav" id="nav" aria-label="Principal">
       <a href="#metodo" data-en="Method">Método</a>
       <a href="#cursos" data-en="Courses">Cursos</a>
+      <a data-evento="examenes-nav" href="/examenes/" data-en="Exams">Exámenes</a>
       <a href="#sobre-mi" data-en="About me">Sobre mí</a>
       <a data-evento="test-nav" href="/test-de-nivel/" data-en="Level test">Test de nivel</a>
       <a href="#contacto" data-en="Contact">Contacto</a>
@@ -188,6 +272,7 @@
         <div>
           <p class="eyebrow" data-en="02 — COURSES">02 — CURSOS</p>
           <h2 class="display" style="margin-top:14px" data-en="Two ways of working together">Dos formas de trabajar juntos</h2>
+          <p class="contacto__bajada" style="max-width:520px" data-en="Online English classes for adults: one to one, or in groups of no more than six, at times that fit your time zone.">Clases de inglés online para adultos: individuales o en grupos de no más de seis, en horarios que se acomodan a tu huso horario.</p>
         </div>
         <a data-evento="wa-precios" class="enlace-subrayado" href="https://wa.me/5493515645110" target="_blank" rel="noopener" data-en="All levels and prices →">Todos los niveles y precios →</a>
       </div>
@@ -220,8 +305,45 @@
     </div>
   </section>
 
-  <!-- ================= 03 SOBRE MÍ ================= -->
-  <section class="seccion seccion--crema" id="sobre-mi">
+  <!-- ================= 03 EXÁMENES ================= -->
+  <section class="seccion seccion--crema" id="examenes">
+    <div class="wrap">
+      <div class="seccion__cabecera">
+        <div>
+          <p class="eyebrow" data-en="03 — EXAMS">03 — EXÁMENES</p>
+          <h2 class="display" style="margin-top:14px" data-en="Preparation for international English exams">Preparación de exámenes internacionales de inglés</h2>
+          <p class="contacto__bajada" style="max-width:560px" data-en="IELTS, TOEFL and Cambridge have a technique of their own, on top of the English. Here is what each one is, who asks for it and how it is prepared.">IELTS, TOEFL y Cambridge tienen una técnica propia además del inglés. Acá está qué es cada uno, quién lo pide y cómo se prepara.</p>
+        </div>
+        <a data-evento="examenes-ver-todos" class="enlace-subrayado" href="/examenes/" data-en="Compare the three exams →">Comparar los tres exámenes →</a>
+      </div>
+
+      <div class="examenes">
+        <a class="examen-tarjeta" data-evento="examen-ielts" href="/examenes/ielts/">
+          <span class="etiqueta-mono" data-en="ACADEMIC · MIGRATION">ACADÉMICO · MIGRACIÓN</span>
+          <h3>IELTS</h3>
+          <p data-en="Universities and visas in the United Kingdom, Australia, Canada and New Zealand. Bands from 0 to 9, with no pass or fail.">Universidades y visas en Reino Unido, Australia, Canadá y Nueva Zelanda. Bandas del 0 al 9, sin aprobar ni desaprobar.</p>
+          <span class="flecha" data-en="Prepare IELTS →">Preparar IELTS →</span>
+        </a>
+
+        <a class="examen-tarjeta" data-evento="examen-toefl" href="/examenes/toefl/">
+          <span class="etiqueta-mono" data-en="US UNIVERSITIES">UNIVERSIDADES DE EE. UU.</span>
+          <h3>TOEFL</h3>
+          <p data-en="The reference for universities in the United States. All on a computer, scored from 0 to 120, with a recorded speaking.">La referencia de las universidades de Estados Unidos. Todo por computadora, puntaje de 0 a 120 y un speaking grabado.</p>
+          <span class="flecha" data-en="Prepare TOEFL →">Preparar TOEFL →</span>
+        </a>
+
+        <a class="examen-tarjeta" data-evento="examen-cambridge" href="/examenes/cambridge/">
+          <span class="etiqueta-mono" data-en="CERTIFICATE FOR LIFE">CERTIFICADO DE POR VIDA</span>
+          <h3>Cambridge</h3>
+          <p data-en="B2 First, C1 Advanced, C2 Proficiency: one exam per level, and a certificate with no expiry date.">B2 First, C1 Advanced, C2 Proficiency: un examen por nivel y un certificado que no vence.</p>
+          <span class="flecha" data-en="Prepare Cambridge →">Preparar Cambridge →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 04 SOBRE MÍ ================= -->
+  <section class="seccion seccion--blanca" id="sobre-mi">
     <div class="wrap sobre">
       <div class="sobre__foto">
         <img src="/assets/vicky-about.webp"
@@ -231,7 +353,7 @@
         <span class="sobre__chapa">Victoria Rossa</span>
       </div>
       <div class="sobre__texto">
-        <p class="eyebrow" data-en="03 — ABOUT ME">03 — SOBRE MÍ</p>
+        <p class="eyebrow" data-en="04 — ABOUT ME">04 — SOBRE MÍ</p>
         <h2 class="display" data-en="Hi, I'm Vicky! The face behind In Context English.">¡Hola, soy Vicky! La cara detrás de In Context English.</h2>
         <p data-en="I started learning English when I was little, and I remember that whenever someone asked me what a word meant, I would answer: &laquo;tell me the context, tell me the whole sentence&raquo; — because the context helped me understand and convey the meaning. I understood that what mattered was communicating the message, not translating word by word.">Empecé a estudiar inglés cuando era pequeña y recuerdo que siempre que alguien me preguntaba el significado de una palabra yo le decía: «decime el contexto, decime toda la oración», ya que el contexto me ayudaba a entender y transmitir el significado. Entendía que lo importante era comunicar el mensaje y no traducir palabra por palabra.</p>
         <p data-en="In Context English came out of that, with the firm purpose of helping people who today need to speak the language freely, without constantly translating in their heads and without the fear of making mistakes.">In Context English surge como consecuencia de ese aprendizaje y con el firme propósito de ayudar a quienes hoy en día necesitan poder hablar el idioma sin trabas y sin estar constantemente traduciendo mentalmente con miedo a equivocarse.</p>
@@ -239,11 +361,11 @@
     </div>
   </section>
 
-  <!-- ================= 04 TESTIMONIOS ================= -->
+  <!-- ================= 05 TESTIMONIOS ================= -->
   <section class="seccion seccion--bordo" id="testimonios">
     <div class="wrap">
       <div class="testimonios__intro">
-        <p class="eyebrow eyebrow--claro" data-en="04 — STUDENTS">04 — ALUMNOS</p>
+        <p class="eyebrow eyebrow--claro" data-en="05 — STUDENTS">05 — ALUMNOS</p>
         <h2 class="display" style="margin-top:14px" data-en="What they say when they get there">Lo que dicen cuando llegan</h2>
         <p class="testimonios__bajada" data-en="Messages from students, after an exam, a trip or a class.">Mensajes de alumnos, después de un examen, un viaje o una clase.</p>
       </div>
@@ -276,11 +398,50 @@
     </div>
   </section>
 
-  <!-- ================= 05 CONTACTO ================= -->
+  <!-- ================= 06 PREGUNTAS FRECUENTES =================
+       Sólo preguntas que se pueden responder con lo que el sitio ya afirma.
+       Las que dependen de datos de Victoria (precios, duración, plataforma,
+       política de cancelación) todavía no están: una respuesta inventada acá
+       es peor que la ausencia de la pregunta. ============================= -->
+  <section class="seccion seccion--crema" id="preguntas">
+    <div class="wrap">
+      <p class="eyebrow" data-en="06 — FREQUENT QUESTIONS">06 — PREGUNTAS FRECUENTES</p>
+      <h2 class="display" style="margin-top:14px" data-en="What people ask before starting">Lo que se pregunta antes de empezar</h2>
+
+      <div class="faq">
+        <details>
+          <summary data-en="Are the classes fully online?">¿Las clases son 100% online?</summary>
+          <p data-en="Yes. Every class is held by video call, from Argentina to wherever you are, and timetables are arranged across time zones.">Sí. Todas las clases son por videollamada, desde Argentina a donde estés, y los horarios se acomodan entre husos horarios.</p>
+        </details>
+        <details>
+          <summary data-en="How do I know what level I am at?">¿Cómo sé qué nivel tengo?</summary>
+          <p data-en="With the free level test on this site: twenty questions in context, about ten minutes, and it gives you your CEFR level from A1 to C1 along with a course recommendation.">Con el test de nivel gratis de este sitio: veinte preguntas en contexto, unos diez minutos, y te da tu nivel según el Marco Común Europeo de A1 a C1 con una recomendación de curso.</p>
+        </details>
+        <details>
+          <summary data-en="How many students are there in a group class?">¿Cuántos alumnos hay en una clase grupal?</summary>
+          <p data-en="Six at most, always with people at your own level: there is a level check before you join, so nobody ends up in a group that runs ahead of them or behind them.">Máximo seis, siempre con personas de tu mismo nivel: hay una nivelación previa al ingreso, así nadie termina en un grupo que le va muy adelante o muy atrás.</p>
+        </details>
+        <details>
+          <summary data-en="Do you prepare people for international exams?">¿Preparás exámenes internacionales?</summary>
+          <p data-en="Yes: IELTS, TOEFL and Cambridge. Each one has a technique of its own on top of the English, and there is a page for each explaining how it is prepared.">Sí: IELTS, TOEFL y Cambridge. Cada uno tiene una técnica propia además del inglés, y hay una página por examen donde está explicado cómo se prepara.</p>
+        </details>
+        <details>
+          <summary data-en="What is different about these classes?">¿En qué se diferencian estas clases?</summary>
+          <p data-en="The material comes out of your real life — your meetings, your emails, your industry, your exam — and you speak from the first minute. Grammar shows up when you need it, never as a list to memorise.">El material sale de tu vida real: tus reuniones, tus mails, tu industria, tu examen. Y hablás desde el primer minuto: la gramática aparece cuando la necesitás, nunca como una lista para memorizar.</p>
+        </details>
+        <details>
+          <summary data-en="How much do the classes cost?">¿Cuánto salen las clases?</summary>
+          <p data-en="It depends on whether they are one to one or in a group, and on how often you meet. Message me on WhatsApp with what you need and I will tell you straight away.">Depende de si son individuales o grupales y de la frecuencia. Escribime por WhatsApp contándome qué necesitás y te paso los valores.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 07 CONTACTO ================= -->
   <section class="seccion seccion--blanca" id="contacto">
     <div class="wrap contacto">
       <div>
-        <p class="eyebrow" data-en="05 — CONTACT">05 — CONTACTO</p>
+        <p class="eyebrow" data-en="07 — CONTACT">07 — CONTACTO</p>
         <h2 class="display" data-en="Let's talk about where you are and where you want to get to.">Charlemos sobre dónde estás y a dónde querés llegar.</h2>
         <p class="contacto__bajada" data-en="The fastest way is WhatsApp. If you prefer, fill in the form and it opens a WhatsApp chat with your message already written.">Lo más rápido es WhatsApp. Si preferís, completá el formulario y se abre un chat de WhatsApp con tu mensaje ya escrito.</p>
 

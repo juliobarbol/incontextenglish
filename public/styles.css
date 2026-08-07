@@ -897,4 +897,149 @@ h2.display { font-size: clamp(30px, 4.6vw, 44px); line-height: 1.12; }
 .repaso .pregunta { font-size: 14.5px; line-height: 1.5; color: rgba(247, 241, 230, 0.9); }
 .repaso .detalle { margin-top: 4px; font-size: 13px; color: rgba(247, 241, 230, 0.55); }
 
+/* ==========================================================================
+   Páginas de contenido (exámenes)
+
+   Reutilizan la cabecera, el pie y las secciones de la home. Lo que sigue es
+   sólo lo que la home no tenía: migas de pan, texto largo, la ficha de datos
+   del examen, las tarjetas del índice y el acordeón de preguntas.
+   ========================================================================== */
+
+.migas {
+  margin: 0 0 20px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: rgba(247, 241, 230, 0.55);
+}
+.migas a { color: rgba(247, 241, 230, 0.85); text-decoration: none; border-bottom: 1px solid rgba(251, 201, 62, 0.45); }
+.migas a:hover { color: var(--amarillo); }
+.migas span { margin-inline: 8px; }
+
+/* Bloque de apertura: mismo bordo del hero, sin la foto ni el arco. */
+.portada { padding-block: clamp(40px, 6vw, 64px) clamp(48px, 7vw, 72px); }
+.portada h1.display { margin-top: 20px; font-size: clamp(34px, 5.6vw, 58px); }
+.portada .test-bajada { max-width: 660px; }
+.portada .hero__ctas { margin-top: 34px; }
+
+/* Texto largo. Ancho de lectura: la home no tenía párrafos seguidos. */
+.prosa { max-width: 720px; }
+/* Cuando .prosa va sobre el mismo elemento que .wrap, su max-width pisaría al
+   del wrap y el bloque quedaría centrado en la página, desalineado del resto
+   de las secciones. Le devolvemos el ancho al contenedor y limitamos los
+   hijos, que es lo que se quería limitar. */
+.wrap.prosa { max-width: var(--ancho); }
+.wrap.prosa > * { max-width: 720px; }
+/* Los márgenes van elemento por elemento y no con un `* + *`: las reglas de
+   abajo son más específicas y lo pisarían, dejando los párrafos pegados. */
+.prosa .eyebrow { margin: 0 0 14px; }
+.prosa h2 { margin: 0 0 22px; }
+.prosa h3 {
+  margin: 40px 0 14px;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.prosa p { margin: 0 0 22px; font-size: 15.5px; line-height: 1.75; color: rgba(43, 20, 20, 0.78); }
+.prosa ul { margin: 0 0 22px; padding: 0; list-style: none; display: grid; gap: 11px; }
+.prosa > :last-child { margin-bottom: 0; }
+.prosa li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(43, 20, 20, 0.78);
+}
+.prosa li::before { content: "→"; color: var(--verde); }
+.seccion--bordo .prosa p,
+.seccion--bordo .prosa li { color: rgba(247, 241, 230, 0.82); }
+.seccion--bordo .prosa li::before { color: var(--amarillo); }
+
+/* Ficha de datos del examen: duración, secciones, puntaje, vigencia. */
+.ficha {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 0 0 44px;
+  padding: 0;
+  list-style: none;
+}
+.ficha > * { min-width: 0; }
+.ficha li {
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: rgba(110, 17, 18, 0.05);
+  border: 1px solid rgba(110, 17, 18, 0.12);
+}
+.ficha b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--verde);
+}
+.ficha span { display: block; margin-top: 8px; font-size: 14.5px; line-height: 1.5; }
+@media (max-width: 860px) { .ficha { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 460px) { .ficha { grid-template-columns: 1fr; } }
+
+/* Índice de exámenes */
+.examenes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 38px; }
+.examenes > * { min-width: 0; }
+.examen-tarjeta {
+  display: flex;
+  flex-direction: column;
+  padding: 30px 28px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  border: 1px solid rgba(43, 20, 20, 0.1);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.examen-tarjeta:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(43, 20, 20, 0.1); }
+.examen-tarjeta h3 { margin: 12px 0 0; font-family: var(--serif); font-weight: 300; font-size: 27px; line-height: 1.1; }
+.examen-tarjeta p { margin: 12px 0 0; font-size: 14.5px; line-height: 1.6; color: rgba(43, 20, 20, 0.7); }
+.examen-tarjeta .flecha { margin-top: 22px; font-size: 14px; font-weight: 600; color: var(--bordo); }
+@media (max-width: 900px) { .examenes { grid-template-columns: 1fr; } }
+
+/* Preguntas frecuentes */
+.faq { max-width: 800px; margin-top: 34px; display: grid; gap: 12px; }
+.faq details {
+  border-radius: 16px;
+  background: var(--blanco);
+  border: 1px solid rgba(43, 20, 20, 0.1);
+}
+.seccion--blanca .faq details { background: var(--crema); }
+.faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  list-style: none;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+";
+  flex: none;
+  font-family: var(--mono);
+  font-size: 18px;
+  color: var(--verde);
+}
+.faq details[open] summary::after { content: "–"; }
+.faq p {
+  margin: 0;
+  padding: 0 22px 20px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(43, 20, 20, 0.75);
+}
+.faq a { color: var(--verde); font-weight: 600; }
+
 [hidden] { display: none !important; }

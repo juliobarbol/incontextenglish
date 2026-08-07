@@ -1,13 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Sin changefreq ni priority: Google los ignora hace años. lastmod sí lo usa,
+     así que hay que tocarlo cuando el contenido de la página cambia de verdad. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://incontextenglish.com.ar/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-08-07</lastmod>
   </url>
   <url>
     <loc>https://incontextenglish.com.ar/test-de-nivel/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-08-02</lastmod>
+  </url>
+  <url>
+    <loc>https://incontextenglish.com.ar/examenes/</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
+    <loc>https://incontextenglish.com.ar/examenes/ielts/</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
+    <loc>https://incontextenglish.com.ar/examenes/toefl/</loc>
+    <lastmod>2026-08-07</lastmod>
+  </url>
+  <url>
+    <loc>https://incontextenglish.com.ar/examenes/cambridge/</loc>
+    <lastmod>2026-08-07</lastmod>
   </url>
 </urlset>
