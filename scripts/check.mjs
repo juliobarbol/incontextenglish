@@ -241,6 +241,47 @@ for (const archivo of paginas) {
 }
 
 /* ==========================================================================
+   4 ter. Tres roturas silenciosas más, del mismo tipo que las de arriba:
+   nadie las ve mirando la pantalla y las tres se arreglan en un atributo.
+   ========================================================================== */
+
+for (const archivo of paginas) {
+  const html = leer(archivo);
+
+  /* Un <img> sin alt es invisible para un lector de pantalla y para Google.
+     alt="" está bien y es distinto de no ponerlo: dice «es decorativa». */
+  for (const m of html.matchAll(/<img\b([^>]*)>/gi)) {
+    const attrs = atributos("img " + m[1]);
+    if (!("alt" in attrs)) {
+      error(rel(archivo), `<img src="${attrs.src ?? "?"}"> sin alt`);
+    }
+    // Sin width/height el texto salta cuando termina de cargar la imagen.
+    if (!("width" in attrs) || !("height" in attrs)) {
+      aviso(rel(archivo), `<img src="${attrs.src ?? "?"}"> sin width/height: la página salta al cargar`);
+    }
+  }
+
+  /* target="_blank" sin rel=noopener deja que la pestaña nueva manipule a la
+     que la abrió. Los navegadores de hoy lo aplican solos, pero no todos. */
+  for (const m of html.matchAll(/<a\b([^>]*)>/gi)) {
+    const attrs = atributos("a " + m[1]);
+    if (attrs.target === "_blank" && !/\bnoopener\b/.test(attrs.rel ?? "")) {
+      error(rel(archivo), `<a href="${attrs.href ?? "?"}" target="_blank"> sin rel="noopener"`);
+    }
+  }
+
+  /* Un id repetido rompe getElementById en silencio: devuelve el primero y el
+     segundo queda muerto. Es justo cómo se rompería el test. */
+  const vistos = new Map();
+  for (const m of html.matchAll(/\bid\s*=\s*"([^"]+)"/g)) {
+    vistos.set(m[1], (vistos.get(m[1]) ?? 0) + 1);
+  }
+  for (const [id, veces] of vistos) {
+    if (veces > 1) error(rel(archivo), `id="${id}" está ${veces} veces: sólo funciona el primero`);
+  }
+}
+
+/* ==========================================================================
    5. Orden de scripts: app.js antes que quiz.js, los dos con defer
    ========================================================================== */
 

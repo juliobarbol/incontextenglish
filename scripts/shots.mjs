@@ -402,6 +402,33 @@ for (const vp of ANCHOS) {
   await ctx.close();
 }
 
+/* Privacidad. Es la única página con párrafos largos, y la única donde el
+   bilingüe pasa por data-en-html en el medio del texto: si eso se rompe,
+   desaparece el link de WhatsApp del final y no lo nota nadie. */
+for (const vp of ANCHOS) {
+  const { ctx, page } = await nuevaPagina(vp, `privacidad-${vp.nombre}`);
+  await page.goto(`${base}/privacidad/`, { waitUntil: "networkidle" });
+  await capturar(page, `privacidad-${vp.nombre}`);
+
+  await page.click("[data-lang-btn]");
+  const enIngles = await page.evaluate(() => ({
+    lang: document.documentElement.lang,
+    links: document.querySelectorAll('.prosa a[href*="wa.me"]').length,
+    negritas: document.querySelectorAll(".prosa li strong").length,
+    castellano: /privacidad|navegador|tipografías/i.test(document.querySelector(".prosa").textContent),
+  }));
+  if (enIngles.lang !== "en" || enIngles.links !== 1 || enIngles.negritas < 3 || enIngles.castellano) {
+    problemas.push(
+      `privacidad (${vp.nombre}): en inglés quedó lang=${enIngles.lang}, ` +
+        `${enIngles.links} link(s) de WhatsApp, ${enIngles.negritas} negritas` +
+        (enIngles.castellano ? ", y quedó texto en castellano" : "")
+    );
+  } else if (vp === ANCHOS[0]) {
+    console.log("  · la página de privacidad se traduce sin perder el link ni el marcado");
+  }
+  await ctx.close();
+}
+
 await navegador.close();
 server.close();
 

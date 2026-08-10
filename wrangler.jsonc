@@ -22,6 +22,22 @@
       "database_id": "1707273f-9964-491f-957e-933c5d8d1400"
     }
   ],
+  // Tope de eventos por IP y por minuto en /api/evento. Una visita normal manda
+  // menos de 15 (una página, algún clic, cuatro de scroll, dos del test); 60 deja
+  // margen de sobra y corta a quien quiera llenar la base con un script.
+  // El contador vive en el borde de Cloudflare y no guarda la IP en ningún lado.
+  "ratelimits": [
+    {
+      "name": "LIMITE",
+      "namespace_id": "1",
+      "simple": { "limit": 60, "period": 60 }
+    }
+  ],
+  // Limpieza de eventos viejos: lunes a las 3 UTC (medianoche en Argentina).
+  // El handler `scheduled` de src/index.js borra lo de más de 12 meses.
+  "triggers": {
+    "crons": ["0 3 * * 1"]
+  },
   "observability": {
     "enabled": true
   }

@@ -897,4 +897,43 @@ h2.display { font-size: clamp(30px, 4.6vw, 44px); line-height: 1.12; }
 .repaso .pregunta { font-size: 14.5px; line-height: 1.5; color: rgba(247, 241, 230, 0.9); }
 .repaso .detalle { margin-top: 4px; font-size: 13px; color: rgba(247, 241, 230, 0.55); }
 
+/* ---------- Texto largo (privacidad) ----------
+   El sitio es todo titulares y tarjetas; esto es lo único con párrafos
+   seguidos. Va sobre el fondo bordo de .pagina-test, así que los links van en
+   amarillo: el verde de los links del resto del sitio, sobre bordo, no se lee.
+   ------------------------------------------------------------------------- */
+
+.prosa {
+  margin-top: 40px;
+  max-width: 680px;
+  font-size: clamp(15px, 2.1vw, 16px);
+  line-height: 1.75;
+  color: rgba(247, 241, 230, 0.85);
+  text-wrap: pretty;
+}
+.prosa h2 {
+  margin: 46px 0 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(22px, 3.4vw, 28px);
+  line-height: 1.2;
+  color: var(--crema);
+}
+.prosa h2:first-child { margin-top: 0; }
+.prosa p { margin: 14px 0 0; }
+.prosa ul { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+/* La flecha va posicionada y no como ítem flex: con flex, un <strong> al
+   principio del renglón se vuelve un ítem aparte y parte el texto en columnas. */
+.prosa li { position: relative; padding-left: 26px; }
+.prosa li::before { content: "→"; color: var(--amarillo); position: absolute; left: 0; top: 0; }
+.prosa a { color: var(--amarillo); }
+.prosa strong { color: var(--crema); font-weight: 600; }
+.prosa .nota {
+  margin-top: 46px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(251, 201, 62, 0.2);
+  font-size: 13.5px;
+  color: rgba(247, 241, 230, 0.6);
+}
+
 [hidden] { display: none !important; }

@@ -15,16 +15,22 @@ scripts/
   check.mjs               validador del sitio (npm run check)
   shots.mjs               capturas + prueba de humo (npm run shots)
 .claude/                  configuración de Claude Code: comandos y verificación automática
+.github/
+  workflows/verificar.yml verificación automática en cada push y PR
+  dependabot.yml          avisos de versiones nuevas
 public/
   index.html              home
   test-de-nivel/          test de nivel (20 preguntas, resultado A1–C1)
+  privacidad/             qué datos recoge el sitio y qué no
   styles.css              hoja de estilos única
   app.js                  idioma ES/EN, menú mobile, formulario → WhatsApp
   quiz.js                 lógica del test
   assets/                 logo, fotos en WebP, favicon, imagen para compartir
   _headers                cabeceras de caché y seguridad
   404.html  robots.txt  sitemap.xml
+src/index.js              el único código de servidor: /api/evento y la limpieza
 wrangler.jsonc            configuración de Cloudflare Workers
+SECURITY.md               cómo reportar un problema de seguridad
 ```
 
 ## Desarrollo local
@@ -163,13 +169,55 @@ Para desarrollo local hay que crear la tabla una vez:
 npx wrangler d1 execute incontextenglish --local --file=schema.sql
 ```
 
+Los eventos **se borran solos a los 12 meses**. Lo hace el handler `scheduled`
+de `src/index.js`, que Cloudflare llama los lunes por el cron de
+`wrangler.jsonc`. Sirven para ver la tendencia del año, no para consultar 2026
+desde 2031, y lo que no se guarda no se puede perder ni filtrar.
+
 ## Cabeceras y seguridad
 
-`public/_headers` define caché y seguridad. Incluye una **Content-Security-Policy**
-que sólo permite scripts propios y tipografías de Google. Si alguna vez se suma un
-script externo (analítica, chat, píxel), hay que agregarlo ahí o el navegador lo va
-a bloquear en silencio. `npm run shots` aplica estas mismas cabeceras localmente,
-así que una CSP mal escrita se detecta antes de publicar.
+`public/_headers` define caché y seguridad para los archivos de `public/`.
+Incluye una **Content-Security-Policy** que sólo permite scripts propios y
+tipografías de Google: si alguna vez se suma un script externo (analítica, chat,
+píxel), hay que agregarlo ahí o el navegador lo va a bloquear en silencio. Están
+también HSTS (un año de HTTPS obligatorio), `nosniff`, `X-Frame-Options` y
+`Cross-Origin-Opener-Policy`. `npm run shots` aplica estas mismas cabeceras
+localmente, así que una CSP mal escrita se detecta antes de publicar.
+
+Las respuestas de `/api/evento` **no pasan por `_headers`** —las sirve el Worker,
+no el servidor de archivos—, así que llevan las suyas puestas en `src/index.js`.
+
+El endpoint además:
+
+- **Exige `Origin` del propio dominio.** Los navegadores lo mandan en todo POST,
+  incluso del mismo origen; un script llamando al endpoint desde afuera, no.
+- **Limita a 60 eventos por IP y por minuto** (binding `ratelimits` de
+  `wrangler.jsonc`). Una visita normal manda menos de 15. La IP es la clave del
+  contador, que vive en el borde de Cloudflare: **no se guarda en la base**.
+- **Rechaza cuerpos de más de 2 KB** y valida todo contra listas cerradas de
+  valores. Las consultas van con parámetros ligados, nunca con SQL armado a mano.
+
+Cómo reportar un problema de seguridad: `SECURITY.md`.
+
+## Qué se revisa solo
+
+Además del hook de Claude Code, que corre `check` después de cada edición en
+`public/`, hay **GitHub Actions** (`.github/workflows/verificar.yml`). En cada
+push y en cada PR corre, en paralelo:
+
+| Job | Qué hace |
+| --- | --- |
+| Validador del sitio | `npm run check` — enlaces rotos, `data-en` que faltan, etiquetas de medición repetidas, canonical y sitemap |
+| Capturas y prueba de humo | `npm run shots` — recorre el test entero y sube las capturas como artefacto descargable |
+| Auditoría de dependencias | `npm audit` sobre wrangler y compañía |
+
+**Un CI en rojo no impide publicar por sí solo**: el despliegue lo dispara
+Workers Builds cuando `main` cambia, sin mirar Actions. Si se quiere que sea
+obligatorio, hay que marcar los jobs como *required* en Settings → Branches.
+
+**Dependabot** (`.github/dependabot.yml`) abre un PR por mes cuando salen
+versiones nuevas de wrangler o de las actions. Esos PR no publican nada: sólo
+`main` despliega.
 
 ## Pendientes
 

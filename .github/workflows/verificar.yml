@@ -1,0 +1,72 @@
+# Corre las mismas verificaciones que `npm run verificar`, pero en GitHub y en
+# cada push. El hook de .claude/settings.json sólo protege a quien edita con
+# Claude Code en esta máquina; esto protege al repo pase lo que pase.
+#
+# `check` es rápido y sin dependencias. `shots` levanta Chromium —es el que
+# corre la regla de nivel del test contra los casos armados a mano— y por eso
+# tarda un par de minutos: va en un job aparte para que el error de un data-en
+# que falta se vea enseguida y no detrás del navegador.
+
+name: Verificar
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  # Permite correrlo a mano desde la pestaña Actions.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Un push nuevo cancela la corrida vieja de la misma rama.
+  group: verificar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Validador del sitio
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # check no usa dependencias: no hace falta npm install.
+      - run: npm run check
+
+  shots:
+    name: Capturas y prueba de humo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # shots.mjs no importa Playwright del proyecto: lo busca en el global,
+      # igual que en la máquina de quien lo corre a mano. Por eso va -g y no
+      # como dependencia del package.json.
+      - run: npm install -g playwright
+      - run: npx playwright install --with-deps chromium
+      - run: npm run shots
+      # Las capturas quedan descargables desde la corrida: sirven para mirar
+      # el mobile sin bajarse el repo.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capturas
+          path: .shots/
+          retention-days: 14
+
+  auditoria:
+    name: Auditoría de dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Sólo hay dependencias de desarrollo (wrangler y playwright), así que un
+      # agujero acá no afecta a quien visita el sitio, pero sí a quien despliega.
+      - run: npm audit --audit-level=high

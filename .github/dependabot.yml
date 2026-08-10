@@ -1,0 +1,29 @@
+# Dependabot abre un PR cuando sale una versión nueva de algo que usa el repo.
+# Son pocas cosas —wrangler y las actions del CI—, pero son justo las que tocan
+# el despliegue: quedarse tres años atrás con wrangler es cómo se llega a un
+# "no puedo publicar y no sé por qué".
+#
+# Los PR no publican nada: sólo `main` despliega (ver CLAUDE.md). Cada uno pasa
+# por el workflow Verificar, así que se ve solo si rompe algo.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "deps"
+    # Las de parche se agrupan: no tiene sentido un PR por cada 4.20.1 → 4.20.2.
+    groups:
+      parches:
+        update-types: ["patch"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"

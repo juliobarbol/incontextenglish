@@ -1,8 +1,22 @@
+# Estas cabeceras valen para los archivos de public/. Las respuestas de
+# /api/evento no pasan por acá —las sirve el Worker— y llevan las suyas propias,
+# puestas en src/index.js.
+#
+# Falta a propósito Cross-Origin-Resource-Policy: con same-origin, WhatsApp y
+# las redes no podrían levantar /assets/og.jpg y los links del sitio quedarían
+# sin imagen de preview.
+#
+# Strict-Transport-Security es un año de HTTPS obligatorio: después de la
+# primera visita el navegador ya no intenta http:// ni aunque se lo pidan, así
+# que no hay redirección que interceptar en un wifi ajeno. Va sin `preload` —
+# eso se pide una vez y salir de la lista de los navegadores lleva meses.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
+  Cross-Origin-Opener-Policy: same-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; form-action 'none'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
 
 /assets/*

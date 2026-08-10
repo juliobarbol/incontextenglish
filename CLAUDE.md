@@ -33,6 +33,12 @@ Lo que sí hay es verificación, porque las roturas de este sitio son silenciosa
   entero, comprueba que el resultado se traduzca al cambiar de idioma, y falla si
   hay error de JS o un recurso local que no carga.
 
+Las mismas dos cosas corren en **GitHub Actions** (`.github/workflows/verificar.yml`)
+en cada push y cada PR, más `npm audit`. El hook local sólo cubre a quien edita
+con Claude Code en su máquina; el workflow cubre al repo. Ojo: **el CI en rojo no
+frena el despliegue** — eso lo dispara Workers Builds al cambiar `main`, sin
+mirar Actions. Correr `npm run verificar` antes del commit sigue siendo la regla.
+
 **Mirá siempre `.shots/home-mobile.png`**: el sitio nació de un diseño de ancho
 fijo y las regresiones de layout aparecen casi siempre en mobile. Las capturas se
 sacan sin las tipografías de Google (no hay salida a internet en el sandbox), así
@@ -131,6 +137,30 @@ misma página (si no, los clics de los dos elementos se suman sin que se note).
 
 Para consultar los datos no hace falta panel: el conector de Cloudflare permite
 `d1_database_query` sobre la base `incontextenglish`.
+
+El endpoint está endurecido y las tres cosas se rompen en silencio si se tocan:
+
+- **`Origin` es obligatorio.** Los navegadores lo mandan en todo POST, también
+  del mismo origen. Antes se aceptaba el pedido sin `Origin`, que es justo el
+  caso de un script llamando al endpoint desde afuera. Si algún día el registro
+  deja de recibir datos, esto es lo primero que hay que mirar.
+- **Hay tope de 60 eventos por IP y por minuto** (binding `LIMITE`, declarado en
+  `ratelimits` de `wrangler.jsonc`). El código lo saltea si el binding no existe
+  —dev local— a propósito: el registro nunca puede ser el motivo de que algo
+  falle. **La IP es la clave del contador y no se guarda en ninguna parte**; si
+  alguna vez alguien la escribe en la base, deja de ser cierto todo lo que dice
+  la página de privacidad.
+- **El `scheduled` borra los eventos de más de 12 meses**, los lunes, por el
+  cron de `wrangler.jsonc`. Es la única escritura destructiva del repo.
+
+### La página de privacidad describe el código, no al revés
+
+`public/privacidad/` afirma cosas concretas y verificables: que no hay cookies,
+que no se guarda IP ni las respuestas del test, que los eventos no se
+correlacionan, que se borran a los 12 meses. **Cualquier cambio en `src/index.js`
+o en `registrar()` que toque eso convierte esa página en mentira.** No es una
+formalidad legal copiada de una plantilla: se escribió leyendo este código. Si
+cambiás qué se manda o qué se guarda, actualizala en el mismo commit.
 
 ## Decisiones deliberadas — no son bugs
 
