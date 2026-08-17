@@ -189,7 +189,7 @@ const capturar = async (page, nombre) => {
   console.log(`  ✓ .shots/${nombre}.png`);
 };
 
-/* Home y test, en los dos anchos */
+/* Home, test e información, en los dos anchos */
 for (const vp of ANCHOS) {
   const { ctx, page } = await nuevaPagina(vp, vp.nombre);
 
@@ -198,6 +198,9 @@ for (const vp of ANCHOS) {
 
   await page.goto(`${base}/test-de-nivel/`, { waitUntil: "networkidle" });
   await capturar(page, `test-intro-${vp.nombre}`);
+
+  await page.goto(`${base}/informacion/`, { waitUntil: "networkidle" });
+  await capturar(page, `informacion-${vp.nombre}`);
 
   await ctx.close();
 }

@@ -39,6 +39,8 @@ puede perder; uno en `contenido/` está a salvo y sigue sin publicarse.**
 | Archivo | Qué es |
 |---|---|
 | `_planilla.py` | Arma la planilla de revisión del banco de preguntas del test. Se corre con `python3 contenido/_planilla.py` (necesita `openpyxl`). |
+| `bases-y-condiciones.md` | Las condiciones completas, para mandarle al alumno antes de empezar. Es la versión con los datos de cobro, que no van en la web. Faltan el alias, la cuenta de Revolut y definir si hay PayPal. |
+| `cursos-por-nivel.md` | Propuesta de los cursos de 12 clases (`A1.1`, `A1.2`…) que pidió Victoria el 17/8/2026, con el borrador del primer nivel. Espera que ella apruebe los objetivos. |
 
 El `.xlsx` que genera no se versiona (está en `.gitignore`): se rearma cuando
 haga falta.

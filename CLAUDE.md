@@ -243,8 +243,23 @@ producción, útil para distinguir «no se desplegó» de «es caché».
 
 ## Pendientes de contenido
 
-Fotos profesionales (las actuales son selfies) y una página de precios — hoy
-"Todos los niveles y precios" apunta a WhatsApp.
+Fotos profesionales (las actuales son selfies).
+
+**Los precios no van en el sitio.** Lo decidió Victoria el 17/8/2026: cambian
+según el plan, el grupo y la época, y prefiere pasarlos por WhatsApp. Por eso
+`/informacion/` explica todo lo demás —modalidad, duración, planes,
+reprogramaciones, feriados, cuándo y en qué moneda se abona— y para los valores
+manda a WhatsApp. Si alguna vez se agrega una lista, hay que preguntarle antes.
+
+Los **datos de cobro** (alias, Revolut, PayPal) tampoco van en el sitio, y no por
+olvido: un alias publicado es una invitación a que alguien cobre en nombre de
+In Context English. Viven en `contenido/bases-y-condiciones.md`, que es la
+versión que Victoria le manda a cada alumno antes de empezar.
+
+Los **cursos de 12 clases** (`A1.1`, `A1.2`…) que ella quiere armar están
+propuestos en `contenido/cursos-por-nivel.md` y esperan que apruebe los objetivos
+de cada uno. Ahí está anotado lo que hay que resolver antes, empezando por que 12
+clases son tres meses con una clase semanal pero mes y medio con dos.
 
 Los testimonios ya tienen sección (`#testimonios` en la home, 6/8/2026). Salieron
 de capturas de WhatsApp que pasó Victoria, y por eso hay dos reglas:
