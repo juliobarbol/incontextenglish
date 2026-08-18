@@ -7,3 +7,6 @@ node_modules/
 
 # Planillas generadas para revisión (se rearman con contenido/_planilla.py)
 contenido/*.xlsx
+
+# Documentos generados para revisar (se rearman con contenido/_documentos.mjs)
+contenido/salida/

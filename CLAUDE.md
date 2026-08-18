@@ -261,6 +261,19 @@ propuestos en `contenido/cursos-por-nivel.md` y esperan que apruebe los objetivo
 de cada uno. Ahí está anotado lo que hay que resolver antes, empezando por que 12
 clases son tres meses con una clase semanal pero mes y medio con dos.
 
+### Lo que hay que revisar se manda como archivo
+
+Pedido explícito del dueño (18/8/2026): **no lo mandes a leer el repo.** No es
+programador y no entra a GitHub, así que un texto que espera su decisión —o la de
+Victoria— apuntado como «está en `contenido/`» no lo lee nadie.
+
+- Textos y propuestas → `node contenido/_documentos.mjs` deja los PDF en
+  `contenido/salida/` (ver `contenido/README.md`). El `.md` sigue siendo la
+  fuente: si vuelve con cambios se edita el `.md` y se rearma.
+- Páginas del sitio → las capturas de `npm run shots`.
+
+En los dos casos: generarlos y adjuntarlos en la respuesta, no describirlos.
+
 Los testimonios ya tienen sección (`#testimonios` en la home, 6/8/2026). Salieron
 de capturas de WhatsApp que pasó Victoria, y por eso hay dos reglas:
 
