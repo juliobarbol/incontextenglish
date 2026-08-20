@@ -39,9 +39,36 @@ puede perder; uno en `contenido/` está a salvo y sigue sin publicarse.**
 | Archivo | Qué es |
 |---|---|
 | `_planilla.py` | Arma la planilla de revisión del banco de preguntas del test. Se corre con `python3 contenido/_planilla.py` (necesita `openpyxl`). |
+| `_documentos.mjs` | Convierte los `.md` de acá en PDF, para mandar a revisar. |
+| `bases-y-condiciones.md` | Las condiciones completas, para mandarle al alumno antes de empezar. Es la versión con los datos de cobro, que no van en la web. Faltan el alias, la cuenta de Revolut y definir si hay PayPal. |
+| `cursos-por-nivel.md` | Propuesta de los cursos de 12 clases (`A1.1`, `A1.2`…) que pidió Victoria el 17/8/2026, con el borrador del primer nivel. Espera que ella apruebe los objetivos. |
 
-El `.xlsx` que genera no se versiona (está en `.gitignore`): se rearma cuando
-haga falta.
+Ni el `.xlsx` ni los PDF se versionan (están en `.gitignore`): se rearman cuando
+haga falta, y así no hay dos versiones del mismo texto.
+
+## Mandar algo a revisar
+
+Julio no entra a GitHub —no es programador— así que **lo que espera una decisión
+se le manda como archivo**, no como link al repo:
+
+```bash
+node contenido/_documentos.mjs                      # todos los .md de acá
+node contenido/_documentos.mjs bases-y-condiciones  # uno solo
+```
+
+Deja los PDF en `contenido/salida/`. Se leen en el teléfono y se reenvían por
+WhatsApp, que es por donde Victoria contesta.
+
+**La fuente es el `.md`.** Si vuelve con cambios, se toca el `.md` y se corre de
+nuevo; no queda un Word dando vueltas que después no coincide con nada.
+
+Dentro del `.md`, **lo que va como cita (`> …`) es nota interna y no entra al
+PDF**: ahí se anota lo que le sirve a quien edita el archivo pero no a quien lo
+recibe. Y lo que falta completar se escribe `` `[COMPLETAR: qué falta]` ``, que
+sale resaltado en amarillo.
+
+Para revisar cómo quedó una página del sitio, en cambio, alcanza con
+`npm run shots`: las capturas de `.shots/` se mandan igual.
 
 ## Revisar el banco de preguntas del test
 
