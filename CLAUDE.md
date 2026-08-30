@@ -187,6 +187,32 @@ Está el conector **Cloudflare Developer Platform** (MCP). El Worker se llama
 `cronometro`: mirá su `modified_on` con `workers_list` antes y después del push.
 Si no cambió, el deploy no corrió o falló.
 
+**Hacelo siempre, porque el build puede fallar y nadie se entera.** El 20/8/2026
+se fusionó a `main` y el build de ese commit falló —figura en rojo en Builds
+recientes del panel—, mientras los de la rama de trabajo habían pasado en verde.
+El sitio quedó diez días sin publicar sin ninguna señal: `main` estaba impecable
+en GitHub y el sitio en vivo, intacto y viejo. Las ramas corren
+`wrangler versions upload` y `main` corre `wrangler deploy`: falla el paso de
+publicar, no el de construir. **Al 30/8/2026 el build de `main` sigue roto** y
+falta ver el log del build para saber por qué.
+
+### Publicar a mano cuando el build no publica
+
+Dos caminos, los dos comprobados el 30/8/2026:
+
+- **Con un API token de Cloudflare** (lo crea el dueño en Tokens de API):
+  `CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=… npx wrangler deploy`. Sale bien
+  porque `name` en `wrangler.jsonc` dice `cronometro`; con otro nombre crearía un
+  Worker paralelo sin los custom domains. El token es del dueño: usalo como
+  variable de entorno del comando, **nunca lo escribas en un archivo ni lo
+  commitees**, y avisale que conviene borrarlo después de usarlo.
+- **Sin token, desde el panel**: cada push a una rama deja una versión subida
+  («Historial de versiones»). Si su contenido es el mismo que el de `main`
+  —comprobalo con `git diff <commit> origin/main`, tiene que salir vacío—, se la
+  puede implementar desde ahí y publica exactamente lo mismo.
+
+Ninguno de los dos arregla el build: el próximo push a `main` vuelve a fallar.
+
 ### Qué rama publica: sólo `main`
 
 **Publica `main` y nada más.** Un push a una rama de trabajo se construye igual,
