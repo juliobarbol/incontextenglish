@@ -187,14 +187,35 @@ Está el conector **Cloudflare Developer Platform** (MCP). El Worker se llama
 `cronometro`: mirá su `modified_on` con `workers_list` antes y después del push.
 Si no cambió, el deploy no corrió o falló.
 
-**Hacelo siempre, porque el build puede fallar y nadie se entera.** El 20/8/2026
-se fusionó a `main` y el build de ese commit falló —figura en rojo en Builds
-recientes del panel—, mientras los de la rama de trabajo habían pasado en verde.
-El sitio quedó diez días sin publicar sin ninguna señal: `main` estaba impecable
-en GitHub y el sitio en vivo, intacto y viejo. Las ramas corren
-`wrangler versions upload` y `main` corre `wrangler deploy`: falla el paso de
-publicar, no el de construir. **Al 30/8/2026 el build de `main` sigue roto** y
-falta ver el log del build para saber por qué.
+**Hacelo siempre, porque el build puede morir sin que nadie se entere.** El
+20/8/2026 se fusionó a `main` y el sitio quedó **diez días sin publicar** sin
+ninguna señal: `main` impecable en GitHub, el sitio en vivo intacto y viejo. El
+log de ese build tiene dos líneas y ninguna es del repo:
+
+```
+15:48:41  Initializing build environment...
+15:54:24  Build failed to initialize and was timed out
+```
+
+Nunca llegó a clonar ni a correr `npm`: se colgó aprovisionando el entorno y
+Cloudflare lo dio por vencido a los seis minutos. **No fue el código, ni el
+comando de deploy, ni los permisos del build token** —el mismo token y el mismo
+`npx wrangler deploy` desplegaron bien el 30/8—, y **Workers Builds no
+reintenta solo**. Si vuelve a pasar, alcanza con relanzar el build desde el
+panel o pushear de nuevo; no hay nada que arreglar.
+
+### Leer los builds sin entrar al panel
+
+La [Builds API](https://developers.cloudflare.com/workers/ci-cd/builds/api-reference/)
+sí cuenta lo que el conector MCP no. Necesita un token **de usuario** (los de
+cuenta dan «Invalid token») con *Configuración de Workers Builds: Editar* y
+*Scripts de Workers: Leer*, y el `tag` del Worker, no su nombre —el de
+`cronometro` es `bd91e0fa7ba64360896b1c337c45223f`:
+
+```
+GET /accounts/{acct}/builds/workers/{tag}/builds      # estado de cada build
+GET /accounts/{acct}/builds/builds/{build_uuid}/logs  # el log, que es lo que importa
+```
 
 ### Publicar a mano cuando el build no publica
 
@@ -211,7 +232,7 @@ Dos caminos, los dos comprobados el 30/8/2026:
   —comprobalo con `git diff <commit> origin/main`, tiene que salir vacío—, se la
   puede implementar desde ahí y publica exactamente lo mismo.
 
-Ninguno de los dos arregla el build: el próximo push a `main` vuelve a fallar.
+Los dos publican lo mismo que habría publicado el build.
 
 ### Qué rama publica: sólo `main`
 
